@@ -1,0 +1,121 @@
+{
+  "destinations": [
+    {
+      "id": "srinagar",
+      "name": "Srinagar",
+      "region": "Kashmir Valley",
+      "summary": "Lakeside stays, Mughal gardens, old-city walks, and relaxed shikara evenings on Dal Lake.",
+      "image": "/static/images/srinagar.jpg"
+    },
+    {
+      "id": "gulmarg",
+      "name": "Gulmarg",
+      "region": "Pir Panjal Range",
+      "summary": "Alpine meadows, gondola rides, snow views, pony trails, and quiet pine-framed viewpoints.",
+      "image": "/static/images/gulmarg.jpg"
+    },
+    {
+      "id": "pahalgam",
+      "name": "Pahalgam",
+      "region": "Lidder Valley",
+      "summary": "River valleys, pine forests, Betaab Valley, Aru Valley, and slow scenic drives.",
+      "image": "/static/images/pahalgam.jpg"
+    },
+    {
+      "id": "sonamarg",
+      "name": "Sonamarg",
+      "region": "Ganderbal",
+      "summary": "Glacier routes, mountain passes, Sindh river views, and high-altitude landscapes.",
+      "image": "/static/images/sonamarg.jpg"
+    }
+  ],
+  "hotels": [
+    {
+      "id": "lalit-srinagar",
+      "name": "The LaLiT Grand Palace Srinagar",
+      "destinationId": "srinagar",
+      "category": "5 Star",
+      "roomType": "Palace Garden View",
+      "mealPlan": "MAP",
+      "image": "/static/images/hotel-palace.jpg"
+    },
+    {
+      "id": "vivanta-srinagar",
+      "name": "Vivanta Dal View",
+      "destinationId": "srinagar",
+      "category": "5 Star",
+      "roomType": "Superior Charm Room",
+      "mealPlan": "Breakfast",
+      "image": "/static/images/hotel-dal.jpg"
+    },
+    {
+      "id": "khyber-gulmarg",
+      "name": "The Khyber Himalayan Resort & Spa",
+      "destinationId": "gulmarg",
+      "category": "Luxury",
+      "roomType": "Premier Room",
+      "mealPlan": "MAP",
+      "image": "/static/images/resort.jpg"
+    },
+    {
+      "id": "pine-pahalgam",
+      "name": "Pahalgam Pine Retreat",
+      "destinationId": "pahalgam",
+      "category": "4 Star",
+      "roomType": "River View Room",
+      "mealPlan": "MAP",
+      "image": "/static/images/valley-stay.jpg"
+    }
+  ],
+  "vehicles": [
+    {
+      "id": "ertiga",
+      "name": "Maruti Ertiga",
+      "capacity": "4 guests + luggage",
+      "bestFor": "Couples and small families"
+    },
+    {
+      "id": "innova",
+      "name": "Toyota Innova Crysta",
+      "capacity": "5 guests + luggage",
+      "bestFor": "Premium family travel"
+    },
+    {
+      "id": "tempo",
+      "name": "Tempo Traveller",
+      "capacity": "10-12 guests",
+      "bestFor": "Groups"
+    }
+  ],
+  "activities": [
+    "Shikara ride on Dal Lake",
+    "Mughal garden tour",
+    "Gulmarg gondola phase one",
+    "Betaab Valley excursion",
+    "Aru Valley scenic drive",
+    "Sonamarg glacier viewpoint",
+    "Old Srinagar food walk"
+  ],
+  "templates": [
+    {
+      "id": "kashmir-signature",
+      "name": "Kashmir Signature",
+      "description": "A premium editorial proposal layout for Kashmir itineraries."
+    },
+    {
+      "id": "kashmir-luxury",
+      "name": "Kashmir Luxury",
+      "description": "A high-end editorial layout with large typography, gold accents, and premium journey pacing."
+    },
+    {
+      "id": "kashmir-executive",
+      "name": "Kashmir Executive",
+      "description": "A compact corporate-style proposal with tables, clear commercials, and dense itinerary detail."
+    },
+    {
+      "id": "kashmir-family",
+      "name": "Kashmir Family",
+      "description": "A warm visual proposal for families, with friendly cards and easy-to-scan day plans."
+    }
+  ]
+}

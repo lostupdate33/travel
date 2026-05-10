@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Base URL lets relative /static paths resolve when Playwright renders HTML. -->
+    <base href="{{ proposal.assetBaseUrl }}" />
+    <title>{{ proposal.trip.title }} - Proposal</title>
+    <link rel="stylesheet" href="/static/css/proposals/kashmir-signature.css" />
+  </head>
+  <body>
+    <main class="proposal">
+      <!-- Cover page: strongest brand/customer signal and trip summary. -->
+      <section class="cover" style="background-image: linear-gradient(90deg, rgba(14, 28, 30, .82), rgba(14, 28, 30, .24)), url('{{ proposal.trip.coverImage }}');">
+        <div class="brand">{{ proposal.company.name }}</div>
+        <div class="cover-content">
+          <p class="eyebrow">Private Kashmir Travel Proposal</p>
+          <h1>{{ proposal.trip.title }}</h1>
+          <p class="subtitle">{{ proposal.trip.subtitle }}</p>
+          <div class="cover-meta">
+            <span>{{ proposal.trip.duration }}</span>
+            <span>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</span>
+            <span>Starts {{ proposal.trip.startDate }}</span>
+          </div>
+        </div>
+        <div class="prepared-for">
+          <span>Prepared for</span>
+          <strong>{{ proposal.customer.name }}</strong>
+        </div>
+      </section>
+
+      <!-- Overview page: compact executive summary before the itinerary details. -->
+      <section class="page intro-grid">
+        <div>
+          <p class="section-kicker">Overview</p>
+          <h2>Your Kashmir Journey</h2>
+          <p class="lead">{{ proposal.trip.subtitle }}</p>
+        </div>
+        <div class="summary-panel">
+          <div>
+            <span>Duration</span>
+            <strong>{{ proposal.trip.duration }}</strong>
+          </div>
+          <div>
+            <span>Vehicle</span>
+            <strong>{{ proposal.vehicle.name }}</strong>
+          </div>
+          <div>
+            <span>Total Quote</span>
+            <strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Itinerary page(s): each proposal.days item becomes one visual day card. -->
+      <section class="page">
+        <p class="section-kicker">Itinerary</p>
+        <h2>Day Wise Plan</h2>
+        <div class="days">
+          {% for day in proposal.days %}
+            <article class="day-card">
+              <img src="{{ day.image }}" alt="{{ day.destination }}" />
+              <div class="day-body">
+                <div class="day-topline">
+                  <span>Day {{ day.dayNumber }}</span>
+                  <span>{{ day.destination }}</span>
+                </div>
+                <h3>{{ day.title }}</h3>
+                <p>{{ day.summary }}</p>
+                <div class="activity-list">
+                  <!-- Activities are rendered as chips so a day remains scannable. -->
+                  {% for activity in day.activities %}
+                    <span>{{ activity }}</span>
+                  {% endfor %}
+                </div>
+                <div class="stay-line">
+                  <strong>{{ day.hotelName }}</strong>
+                  <span>{{ day.meals }}</span>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Commercial page: selected transport and quote summary. -->
+      <section class="page split">
+        <div>
+          <p class="section-kicker">Transport</p>
+          <h2>{{ proposal.vehicle.name }}</h2>
+          <p>{{ proposal.vehicle.note }}</p>
+          <div class="vehicle-badge">{{ proposal.vehicle.capacity }}</div>
+        </div>
+        <div class="price-box">
+          <h3>Price Summary</h3>
+          <div><span>Package Cost</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
+          <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
+          <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
+          <div class="total"><span>Total Quote</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong></div>
+        </div>
+      </section>
+
+      <!-- Inclusions/exclusions page: standard sales proposal terms. -->
+      <section class="page terms-grid">
+        <div>
+          <p class="section-kicker">Included</p>
+          <h2>Inclusions</h2>
+          <ul>
+            {% for item in proposal.inclusions %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <p class="section-kicker">Not Included</p>
+          <h2>Exclusions</h2>
+          <ul>
+            {% for item in proposal.exclusions %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+
+      <!-- Closing page: operational notes and company contact details. -->
+      <section class="page closing">
+        <p class="section-kicker">Terms</p>
+        <h2>Important Notes</h2>
+        <ol>
+          {% for item in proposal.terms %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ol>
+        <footer>
+          <strong>{{ proposal.company.name }}</strong>
+          <span>{{ proposal.company.email }} · {{ proposal.company.phone }}</span>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

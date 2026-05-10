@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="{{ proposal.assetBaseUrl }}" />
+    <title>{{ proposal.trip.title }} - Executive Proposal</title>
+    <link rel="stylesheet" href="/static/css/proposals/kashmir-executive.css" />
+  </head>
+  <body>
+    <main class="proposal">
+      <section class="cover">
+        <div>
+          <p class="label">{{ proposal.company.name }}</p>
+          <h1>{{ proposal.trip.title }}</h1>
+          <p>{{ proposal.trip.subtitle }}</p>
+        </div>
+        <aside>
+          <span>Prepared for</span>
+          <strong>{{ proposal.customer.name }}</strong>
+          <span>Duration</span>
+          <strong>{{ proposal.trip.duration }}</strong>
+          <span>Total quote</span>
+          <strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
+        </aside>
+      </section>
+
+      <section class="page">
+        <p class="label">Summary</p>
+        <table class="summary">
+          <tr><th>Start date</th><td>{{ proposal.trip.startDate }}</td></tr>
+          <tr><th>Travelers</th><td>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</td></tr>
+          <tr><th>Vehicle</th><td>{{ proposal.vehicle.name }} · {{ proposal.vehicle.capacity }}</td></tr>
+          <tr><th>Prepared by</th><td>{{ proposal.company.name }} · {{ proposal.company.phone }}</td></tr>
+        </table>
+      </section>
+
+      <section class="page">
+        <p class="label">Itinerary</p>
+        <table class="itinerary">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Destination</th>
+              <th>Plan</th>
+              <th>Stay / Meals</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for day in proposal.days %}
+              <tr>
+                <td>{{ day.dayNumber }}</td>
+                <td>{{ day.destination }}</td>
+                <td>
+                  <strong>{{ day.title }}</strong>
+                  <p>{{ day.summary }}</p>
+                  <small>{{ day.activities|join(", ") }}</small>
+                </td>
+                <td>{{ day.hotelName }}<br /><span>{{ day.meals }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="page commercial">
+        <div>
+          <p class="label">Commercials</p>
+          <h2>Price summary</h2>
+          <table>
+            <tr><th>Package cost</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</td></tr>
+            <tr><th>Taxes</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</td></tr>
+            <tr><th>Discount</th><td>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</td></tr>
+            <tr class="total"><th>Total quote</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</td></tr>
+          </table>
+        </div>
+        <div>
+          <p class="label">Transport</p>
+          <h2>{{ proposal.vehicle.name }}</h2>
+          <p>{{ proposal.vehicle.note }}</p>
+        </div>
+      </section>
+
+      <section class="page lists">
+        <div>
+          <p class="label">Inclusions</p>
+          <ul>{% for item in proposal.inclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+        </div>
+        <div>
+          <p class="label">Exclusions</p>
+          <ul>{% for item in proposal.exclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+        </div>
+        <div>
+          <p class="label">Terms</p>
+          <ol>{% for item in proposal.terms %}<li>{{ item }}</li>{% endfor %}</ol>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

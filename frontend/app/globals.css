@@ -1,0 +1,358 @@
+:root {
+  /* App theme tokens. The palette is shared across editor controls and preview chrome. */
+  --bg: #eef1ed;
+  --panel: #ffffff;
+  --ink: #15201e;
+  --muted: #63716e;
+  --line: #d9dfd9;
+  --moss: #52684d;
+  --lake: #2e7073;
+  --saffron: #cf8f32;
+  --danger: #9a3d35;
+}
+
+* {
+  /* Prevent padding/borders from changing fixed editor and preview widths. */
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  /* Keep form controls visually consistent with the app typography. */
+  font: inherit;
+}
+
+.loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.app-shell {
+  /* Desktop layout: navigation rail plus the proposal builder workspace. */
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+.sidebar {
+  /* The sidebar is a product navigation placeholder for future modules. */
+  background: #17211f;
+  color: #fff;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.logo {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo span,
+.template-card span,
+.topbar p,
+.preview-header span {
+  display: block;
+  color: #aeb9b4;
+  font-size: 13px;
+}
+
+nav {
+  display: grid;
+  gap: 8px;
+}
+
+nav a {
+  color: #cbd4cf;
+  text-decoration: none;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+nav a.active {
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+}
+
+.template-card {
+  margin-top: auto;
+  border: 1px solid rgba(255, 255, 255, .18);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.template-card p {
+  color: #c8d0cc;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.builder {
+  min-width: 0;
+}
+
+.topbar {
+  /* Sticky action bar keeps the PDF export button visible while editing. */
+  height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, .76);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.topbar h1 {
+  margin: 2px 0 0;
+  font-size: 28px;
+}
+
+.workspace {
+  /* Left column edits data; right column previews the rendered proposal. */
+  display: grid;
+  grid-template-columns: minmax(460px, 560px) minmax(520px, 1fr);
+  gap: 22px;
+  padding: 22px;
+}
+
+.editor {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.panel {
+  /* Panels group related form fields without nesting cards inside cards. */
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.panel-title h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panel-title.with-action {
+  justify-content: space-between;
+}
+
+.panel-title.with-action > div,
+.inline-label,
+.preview-header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-grid,
+.price-inputs {
+  /* Compact two-column forms on desktop; mobile collapses them below. */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+input,
+select,
+textarea {
+  /* Shared form field treatment keeps all proposal edits predictable. */
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fbfcfa;
+  color: var(--ink);
+  padding: 11px 12px;
+  outline: none;
+}
+
+textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--lake);
+  box-shadow: 0 0 0 3px rgba(46, 112, 115, .12);
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 7px;
+}
+
+.primary-button {
+  background: var(--lake);
+  color: #fff;
+  padding: 12px 16px;
+  font-weight: 700;
+}
+
+.secondary-button {
+  background: #edf4f2;
+  color: var(--lake);
+  padding: 11px 12px;
+  width: 100%;
+  font-weight: 700;
+}
+
+.danger-button {
+  background: #faeeee;
+  color: var(--danger);
+  padding: 10px 12px;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  background: #edf4f2;
+  color: var(--lake);
+}
+
+.day-tabs {
+  /* Horizontal day tabs support longer itineraries without widening the page. */
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+}
+
+.day-tabs button {
+  flex: 0 0 auto;
+  background: #eef1ed;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 12px;
+}
+
+.day-tabs button.selected {
+  background: var(--moss);
+  color: #fff;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.preview-panel {
+  /* Sticky preview allows users to see PDF impact while editing form data. */
+  min-width: 0;
+  height: calc(100vh - 136px);
+  position: sticky;
+  top: 114px;
+  background: #202725;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #111817;
+}
+
+.preview-header {
+  height: 48px;
+  color: #fff;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+iframe {
+  /* The iframe renders backend-generated HTML, not a React recreation. */
+  width: 100%;
+  height: calc(100% - 48px);
+  border: 0;
+  background: #fff;
+}
+
+@media (max-width: 1180px) {
+  /* Tablet layout: remove sidebar and stack editor above preview. */
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-panel {
+    position: static;
+    height: 780px;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Phone layout: single-column controls and a less rigid header. */
+  .topbar {
+    height: auto;
+    align-items: flex-start;
+    gap: 16px;
+    flex-direction: column;
+  }
+
+  .workspace {
+    padding: 12px;
+  }
+
+  .form-grid,
+  .price-inputs,
+  .two-column {
+    grid-template-columns: 1fr;
+  }
+}

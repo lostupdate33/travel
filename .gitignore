@@ -1,0 +1,22 @@
+.agents/
+.codex/
+.gitrepo/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Environment and local files
+.env
+.env.*
+!.env.example
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

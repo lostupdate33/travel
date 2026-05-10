@@ -1,0 +1,123 @@
+{
+  "slug": "kashmir-signature-rahul-sharma",
+  "templateId": "kashmir-signature",
+  "company": {
+    "name": "ValleyCraft Travels",
+    "email": "hello@valleycraft.example",
+    "phone": "+91 98765 43210"
+  },
+  "customer": {
+    "name": "Rahul Sharma",
+    "email": "rahul@example.com",
+    "phone": "+91 90000 11111"
+  },
+  "trip": {
+    "title": "Kashmir Signature Escape",
+    "subtitle": "A curated 6-day private journey through Srinagar, Gulmarg, and Pahalgam",
+    "startDate": "2026-06-12",
+    "duration": "5 Nights / 6 Days",
+    "travelers": {
+      "adults": 2,
+      "children": 1
+    },
+    "coverImage": "/static/images/srinagar.jpg"
+  },
+  "pricing": {
+    "currency": "INR",
+    "base": 124000,
+    "taxes": 6200,
+    "discount": 5000,
+    "total": 125200
+  },
+  "vehicle": {
+    "name": "Toyota Innova Crysta",
+    "capacity": "5 guests + luggage",
+    "note": "Private vehicle with driver for airport transfers, sightseeing, and intercity movement."
+  },
+  "days": [
+    {
+      "dayNumber": 1,
+      "date": "2026-06-12",
+      "title": "Arrival in Srinagar",
+      "destination": "Srinagar",
+      "summary": "Airport pickup, hotel check-in, Dal Lake shikara ride, and an easy evening by the boulevard.",
+      "activities": ["Airport meet and assist", "Shikara ride on Dal Lake", "Boulevard evening walk"],
+      "hotelName": "The LaLiT Grand Palace Srinagar",
+      "meals": "Dinner",
+      "image": "/static/images/srinagar.jpg"
+    },
+    {
+      "dayNumber": 2,
+      "date": "2026-06-13",
+      "title": "Srinagar Gardens and Old City",
+      "destination": "Srinagar",
+      "summary": "A slow day across Nishat, Shalimar, Chashme Shahi, and a short old-city craft trail.",
+      "activities": ["Mughal garden tour", "Old-city craft stop", "Optional Kashmiri wazwan dinner"],
+      "hotelName": "The LaLiT Grand Palace Srinagar",
+      "meals": "Breakfast and Dinner",
+      "image": "/static/images/sonamarg.jpg"
+    },
+    {
+      "dayNumber": 3,
+      "date": "2026-06-14",
+      "title": "Srinagar to Gulmarg",
+      "destination": "Gulmarg",
+      "summary": "Drive through Tangmarg to Gulmarg, settle into the resort, and visit the gondola base area.",
+      "activities": ["Private transfer to Gulmarg", "Gondola base visit", "Meadow walk"],
+      "hotelName": "The Khyber Himalayan Resort & Spa",
+      "meals": "Breakfast and Dinner",
+      "image": "/static/images/gulmarg.jpg"
+    },
+    {
+      "dayNumber": 4,
+      "date": "2026-06-15",
+      "title": "Gulmarg Leisure Day",
+      "destination": "Gulmarg",
+      "summary": "A flexible day for gondola phase one, short trails, photography, and resort time.",
+      "activities": ["Gulmarg gondola phase one", "Pine forest viewpoints", "Cafe stop"],
+      "hotelName": "The Khyber Himalayan Resort & Spa",
+      "meals": "Breakfast and Dinner",
+      "image": "/static/images/resort.jpg"
+    },
+    {
+      "dayNumber": 5,
+      "date": "2026-06-16",
+      "title": "Gulmarg to Pahalgam",
+      "destination": "Pahalgam",
+      "summary": "Scenic drive to Pahalgam with saffron fields and river valley views en route.",
+      "activities": ["Drive via Pampore", "Lidder river viewpoint", "Local market walk"],
+      "hotelName": "Pahalgam Pine Retreat",
+      "meals": "Breakfast and Dinner",
+      "image": "/static/images/pahalgam.jpg"
+    },
+    {
+      "dayNumber": 6,
+      "date": "2026-06-17",
+      "title": "Pahalgam Valleys and Departure",
+      "destination": "Pahalgam",
+      "summary": "Visit Betaab Valley or Aru Valley before returning to Srinagar airport.",
+      "activities": ["Betaab Valley excursion", "Aru Valley scenic drive", "Airport drop"],
+      "hotelName": "Checkout",
+      "meals": "Breakfast",
+      "image": "/static/images/valley-stay.jpg"
+    }
+  ],
+  "inclusions": [
+    "Private vehicle with driver throughout the trip",
+    "Hotel accommodation on twin-sharing basis",
+    "Daily breakfast and selected dinners as mentioned",
+    "Airport pickup and drop in Srinagar",
+    "Driver allowance, tolls, and parking"
+  ],
+  "exclusions": [
+    "Airfare or train fare",
+    "Gondola tickets, pony rides, union cabs, and local activity charges",
+    "Lunches, personal expenses, and room service",
+    "Anything not mentioned under inclusions"
+  ],
+  "terms": [
+    "Rooms are subject to availability at the time of confirmation.",
+    "Prices may change during peak dates, weather disruptions, or hotel inventory changes.",
+    "Local union transport rules may apply in Gulmarg, Pahalgam, and Sonamarg."
+  ]
+}

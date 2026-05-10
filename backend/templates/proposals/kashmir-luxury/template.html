@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="{{ proposal.assetBaseUrl }}" />
+    <title>{{ proposal.trip.title }} - Luxury Proposal</title>
+    <link rel="stylesheet" href="/static/css/proposals/kashmir-luxury.css" />
+  </head>
+  <body>
+    <main class="proposal">
+      <section class="cover" style="background-image: linear-gradient(90deg, rgba(18, 23, 22, .92), rgba(18, 23, 22, .34)), url('{{ proposal.trip.coverImage }}');">
+        <div class="brand-row">
+          <strong>{{ proposal.company.name }}</strong>
+          <span>Private Kashmir Journey</span>
+        </div>
+        <div class="cover-copy">
+          <p class="kicker">Luxury proposal</p>
+          <h1>{{ proposal.trip.title }}</h1>
+          <p>{{ proposal.trip.subtitle }}</p>
+        </div>
+        <div class="cover-footer">
+          <div>
+            <span>Prepared for</span>
+            <strong>{{ proposal.customer.name }}</strong>
+          </div>
+          <div>
+            <span>Journey length</span>
+            <strong>{{ proposal.trip.duration }}</strong>
+          </div>
+          <div>
+            <span>Investment</span>
+            <strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="page overview">
+        <div>
+          <p class="kicker">At a glance</p>
+          <h2>Designed for an unhurried Kashmir escape</h2>
+          <p>{{ proposal.trip.subtitle }}</p>
+        </div>
+        <div class="stat-grid">
+          <div><span>Start</span><strong>{{ proposal.trip.startDate }}</strong></div>
+          <div><span>Guests</span><strong>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</strong></div>
+          <div><span>Vehicle</span><strong>{{ proposal.vehicle.name }}</strong></div>
+          <div><span>Plan</span><strong>{{ proposal.trip.duration }}</strong></div>
+        </div>
+      </section>
+
+      <section class="page">
+        <p class="kicker">Curated itinerary</p>
+        <h2>Day-by-day experience</h2>
+        <div class="timeline">
+          {% for day in proposal.days %}
+            <article class="day">
+              <div class="day-number">{{ "%02d"|format(day.dayNumber) }}</div>
+              <img src="{{ day.image }}" alt="{{ day.destination }}" />
+              <div>
+                <span>{{ day.destination }} · {{ day.meals }}</span>
+                <h3>{{ day.title }}</h3>
+                <p>{{ day.summary }}</p>
+                <div class="chips">
+                  {% for activity in day.activities %}
+                    <em>{{ activity }}</em>
+                  {% endfor %}
+                </div>
+                <strong class="hotel">{{ day.hotelName }}</strong>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="page quote">
+        <div>
+          <p class="kicker">Private transport</p>
+          <h2>{{ proposal.vehicle.name }}</h2>
+          <p>{{ proposal.vehicle.note }}</p>
+          <span class="badge">{{ proposal.vehicle.capacity }}</span>
+        </div>
+        <div class="quote-card">
+          <h3>Quote summary</h3>
+          <div><span>Package cost</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
+          <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
+          <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
+          <div class="total"><span>Total</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong></div>
+        </div>
+      </section>
+
+      <section class="page details">
+        <div>
+          <p class="kicker">Included</p>
+          <ul>{% for item in proposal.inclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+        </div>
+        <div>
+          <p class="kicker">Not included</p>
+          <ul>{% for item in proposal.exclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+        </div>
+        <div class="terms">
+          <p class="kicker">Notes</p>
+          <ol>{% for item in proposal.terms %}<li>{{ item }}</li>{% endfor %}</ol>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="{{ proposal.assetBaseUrl }}" />
+    <title>{{ proposal.trip.title }} - Family Proposal</title>
+    <link rel="stylesheet" href="/static/css/proposals/kashmir-family.css" />
+  </head>
+  <body>
+    <main class="proposal">
+      <section class="cover">
+        <img src="{{ proposal.trip.coverImage }}" alt="Kashmir" />
+        <div>
+          <p>{{ proposal.company.name }}</p>
+          <h1>{{ proposal.trip.title }}</h1>
+          <strong>Prepared for {{ proposal.customer.name }}</strong>
+          <span>{{ proposal.trip.duration }} · {{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</span>
+        </div>
+      </section>
+
+      <section class="page welcome">
+        <p class="tag">Family trip plan</p>
+        <h2>Easy days, scenic drives, and memorable Kashmir stops</h2>
+        <p>{{ proposal.trip.subtitle }}</p>
+        <div class="quick-facts">
+          <div><span>Start</span><strong>{{ proposal.trip.startDate }}</strong></div>
+          <div><span>Vehicle</span><strong>{{ proposal.vehicle.name }}</strong></div>
+          <div><span>Quote</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong></div>
+        </div>
+      </section>
+
+      <section class="page">
+        <p class="tag">Your days</p>
+        <div class="cards">
+          {% for day in proposal.days %}
+            <article class="card">
+              <img src="{{ day.image }}" alt="{{ day.destination }}" />
+              <div>
+                <span>Day {{ day.dayNumber }} · {{ day.destination }}</span>
+                <h3>{{ day.title }}</h3>
+                <p>{{ day.summary }}</p>
+                <ul>
+                  {% for activity in day.activities %}
+                    <li>{{ activity }}</li>
+                  {% endfor %}
+                </ul>
+                <footer>
+                  <strong>{{ day.hotelName }}</strong>
+                  <em>{{ day.meals }}</em>
+                </footer>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="page planning">
+        <div class="transport">
+          <p class="tag">Transport</p>
+          <h2>{{ proposal.vehicle.name }}</h2>
+          <p>{{ proposal.vehicle.note }}</p>
+          <strong>{{ proposal.vehicle.capacity }}</strong>
+        </div>
+        <div class="price">
+          <p class="tag">Pricing</p>
+          <div><span>Base</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
+          <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
+          <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
+          <div class="total"><span>Total</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong></div>
+        </div>
+      </section>
+
+      <section class="page notes">
+        <div>
+          <p class="tag">Included</p>
+          <ul>{% for item in proposal.inclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+        </div>
+        <div>
+          <p class="tag">Not included</p>
+          <ul>{% for item in proposal.exclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+        </div>
+        <div>
+          <p class="tag">Notes</p>
+          <ol>{% for item in proposal.terms %}<li>{{ item }}</li>{% endfor %}</ol>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

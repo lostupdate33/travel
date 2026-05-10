@@ -1,0 +1,293 @@
+:root {
+  /* Proposal template theme tokens. Change these first when creating a variant. */
+  --ink: #17211f;
+  --muted: #62706d;
+  --line: #d8ded8;
+  --paper: #fbfaf5;
+  --moss: #556b4f;
+  --saffron: #d89b43;
+  --lake: #2f6f73;
+}
+
+* {
+  /* Predictable sizing matters because this CSS is printed to A4 PDF. */
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.proposal {
+  /* Wrapper exists so future templates can scope print styles if needed. */
+  background: var(--paper);
+}
+
+.cover {
+  /* Full-screen in browser preview, full-page in the generated PDF. */
+  min-height: 100vh;
+  color: #fff;
+  background-size: cover;
+  background-position: center;
+  padding: 46px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  page-break-after: always;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.cover-content {
+  /* Keep the hero text readable and away from the right side image detail. */
+  align-self: center;
+  max-width: 780px;
+}
+
+.eyebrow,
+.section-kicker {
+  /* Shared small uppercase label used across PDF sections. */
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--saffron);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 18px;
+  font-size: 68px;
+  line-height: .96;
+}
+
+h2 {
+  margin-bottom: 18px;
+  font-size: 36px;
+  line-height: 1.05;
+}
+
+h3 {
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.subtitle,
+.lead {
+  color: rgba(255, 255, 255, .86);
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.lead {
+  color: var(--muted);
+}
+
+.cover-meta {
+  /* Chips summarize duration, travelers, and start date without a table. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.cover-meta span,
+.vehicle-badge {
+  border: 1px solid rgba(255, 255, 255, .42);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.prepared-for {
+  /* Bottom cover rail makes the customer name visible without another page. */
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid rgba(255, 255, 255, .34);
+  padding-top: 22px;
+}
+
+.prepared-for span {
+  color: rgba(255, 255, 255, .72);
+}
+
+.page {
+  /* Every major proposal section starts on a new A4 page. */
+  padding: 52px;
+  page-break-after: always;
+}
+
+.intro-grid,
+.split,
+.terms-grid {
+  /* Reusable two-column page layout for summary, pricing, and terms pages. */
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 42px;
+  align-items: start;
+}
+
+.summary-panel,
+.price-box {
+  /* White panels create contrast against the warm paper background. */
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 24px;
+}
+
+.summary-panel div,
+.price-box div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.summary-panel div:last-child,
+.price-box div:last-child {
+  border-bottom: 0;
+}
+
+.summary-panel span,
+.price-box span,
+.stay-line span {
+  color: var(--muted);
+}
+
+.days {
+  /* Itinerary cards stack vertically so long trips can continue over pages. */
+  display: grid;
+  gap: 18px;
+}
+
+.day-card {
+  /* Avoid splitting a day card across pages during PDF generation. */
+  display: grid;
+  grid-template-columns: 245px 1fr;
+  min-height: 230px;
+  background: #fff;
+  border: 1px solid var(--line);
+  page-break-inside: avoid;
+}
+
+.day-card img {
+  /* Fixed image column keeps itinerary cards visually consistent. */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.day-body {
+  padding: 22px;
+}
+
+.day-topline {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  color: var(--lake);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.day-body p {
+  color: var(--muted);
+  line-height: 1.52;
+}
+
+.activity-list {
+  /* Activity chips make each day easier to scan in a sales proposal. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.activity-list span {
+  background: #eef3ef;
+  color: var(--moss);
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.stay-line {
+  /* Hotel and meals are separated from narrative content as operational info. */
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.vehicle-badge {
+  display: inline-block;
+  margin-top: 20px;
+  border-color: var(--moss);
+  color: var(--moss);
+}
+
+.price-box .total {
+  margin-top: 8px;
+  padding-top: 20px;
+  font-size: 20px;
+}
+
+ul,
+ol {
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.closing {
+  /* Center the final notes so the closing page does not feel empty. */
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+}
+
+footer {
+  margin-top: 44px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: var(--muted);
+}
+
+footer strong {
+  color: var(--ink);
+}
+
+@page {
+  /* Playwright uses this when printing HTML to PDF. */
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  /* Preserve page-like section heights in print/PDF mode. */
+  .page,
+  .cover {
+    min-height: 100vh;
+  }
+}

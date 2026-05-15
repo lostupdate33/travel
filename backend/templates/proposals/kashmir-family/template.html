@@ -6,6 +6,19 @@
     <base href="{{ proposal.assetBaseUrl }}" />
     <title>{{ proposal.trip.title }} - Family Proposal</title>
     <link rel="stylesheet" href="/static/css/proposals/kashmir-family.css" />
+    <style>
+      :root {
+        --ink: {{ proposal.theme.textColor }};
+        --muted: {{ proposal.theme.mutedColor }};
+        --line: {{ proposal.theme.lineColor }};
+        --paper: {{ proposal.theme.paperColor }};
+        --saffron: {{ proposal.theme.accentColor }};
+        --mint: {{ proposal.theme.primaryColor }};
+        --sky: {{ proposal.theme.secondaryColor }};
+        --cream: {{ proposal.theme.surfaceColor }};
+        --wash: {{ proposal.theme.washColor }};
+      }
+    </style>
   </head>
   <body>
     <main class="proposal">
@@ -35,19 +48,32 @@
         <div class="cards">
           {% for day in proposal.days %}
             <article class="card">
-              <img src="{{ day.image }}" alt="{{ day.destination }}" />
+              <div class="card-media">
+                <img src="{{ day.destinationImageUrl }}" alt="{{ day.destination }}" style="object-position: {{ day.destinationImagePosition }};" />
+              </div>
               <div>
                 <span>Day {{ day.dayNumber }} · {{ day.destination }}</span>
                 <h3>{{ day.title }}</h3>
-                <p>{{ day.summary }}</p>
+                <ul class="day-plan-list">{% for bullet in day.dayPlanBullets %}<li>{{ bullet }}</li>{% endfor %}</ul>
+                {% if day.destinationDescription %}<p>{{ day.destinationDescription }}</p>{% endif %}
                 <ul>
                   {% for activity in day.activities %}
                     <li>{{ activity }}</li>
                   {% endfor %}
                 </ul>
-                <footer>
-                  <strong>{{ day.hotelName }}</strong>
-                  <em>{{ day.meals }}</em>
+                <footer class="stay-card">
+                  {% if day.hotelImageUrl %}
+                    <img src="{{ day.hotelImageUrl }}" alt="{{ day.hotelName }}" style="object-position: {{ day.hotelImagePosition }};" />
+                  {% endif %}
+                  <div>
+                    <strong>{{ day.hotelName }}</strong>
+                    {% if day.hotelCategory or day.hotelRoomType %}
+                      <p>{{ day.hotelCategory }}{% if day.hotelCategory and day.hotelRoomType %} · {% endif %}{{ day.hotelRoomType }}</p>
+                    {% endif %}
+                    {% if day.hotelStars %}<span class="stars">{{ day.hotelStars }}</span>{% endif %}
+                    {% if day.hotelSummaryItems %}<ul class="day-plan-list">{% for item in day.hotelSummaryItems %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+                    <em>{{ day.meals }}</em>
+                  </div>
                 </footer>
               </div>
             </article>
@@ -84,6 +110,21 @@
           <p class="tag">Notes</p>
           <ol>{% for item in proposal.terms %}<li>{{ item }}</li>{% endfor %}</ol>
         </div>
+      </section>
+
+      <section class="page extra-sections">
+        {% if proposal.sections.showChecklist %}
+          <div class="section-block"><p class="tag">Checklist</p><h2>{{ proposal.sections.checklist.title }}</h2><p>{{ proposal.sections.checklist.description }}</p><div class="mini-grid">{% for group in proposal.sections.checklist.groups %}<div><h3>{{ group.title }}</h3><ul>{% for item in group["items"] %}<li>{{ item }}</li>{% endfor %}</ul></div>{% endfor %}</div></div>
+        {% endif %}
+        <div class="section-block"><p class="tag">Payment</p><h2>Payment and Booking Process</h2><p>{{ proposal.sections.payment.payment_terms }}</p><div class="payment-grid"><div><strong>{{ proposal.sections.payment.bank_account_name }}</strong><span>A/C {{ proposal.sections.payment.bank_account_number }}</span><span>IFSC {{ proposal.sections.payment.ifsc_code }}</span><span>UPI {{ proposal.sections.payment.upi_id }}</span></div>{% if proposal.sections.payment.qrUrl %}<figure class="payment-qr-card"><span class="payment-qr-frame"><img src="{{ proposal.sections.payment.qrUrl }}" alt="Payment QR" /></span><figcaption>Scan to pay</figcaption></figure>{% endif %}</div></div>
+        <div class="section-block"><p class="tag">Cancellation</p><h2>{{ proposal.sections.cancellationPolicy.title }}</h2><ul>{% for item in proposal.sections.cancellationPolicy.terms %}<li>{{ item }}</li>{% endfor %}</ul><div class="charge-grid">{% for charge in proposal.sections.cancellationPolicy.charges %}<div><span>{{ charge.window }}</span><strong>{{ charge.charge }}</strong></div>{% endfor %}</div></div>
+        {% if proposal.sections.showReviews and proposal.sections.reviews %}
+          <div class="section-block"><p class="tag">Reviews</p><h2>Client Reviews</h2><div class="review-grid">{% for review in proposal.sections.reviews %}<article><strong>{{ review.client_name }}</strong><span>{{ "★" * review.rating }} · {{ review.source_label }}</span><p>{{ review.review_text }}</p></article>{% endfor %}</div></div>
+        {% endif %}
+        {% if proposal.sections.showRemarks and proposal.sections.remarks %}
+          <div class="section-block"><p class="tag">Remarks</p><h2>Additional Remarks</h2><ul>{% for item in proposal.sections.remarks %}<li>{{ item }}</li>{% endfor %}</ul></div>
+        {% endif %}
+        <div class="section-block contact-block"><p class="tag">Booking Contact</p><h2>{{ proposal.sections.contact.contact_name }}</h2><p>{{ proposal.sections.contact.role_title }}</p><div class="contact-grid"><span>{{ proposal.sections.contact.phone }}</span><span>{{ proposal.sections.contact.whatsapp }}</span><span>{{ proposal.sections.contact.email }}</span><span>{{ proposal.sections.contact.website }}</span></div></div>
       </section>
     </main>
   </body>

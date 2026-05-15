@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from ..db.session import DEFAULT_TENANT_SLUG, db_session, is_database_configured
+from .inventory_db import load_inventory_from_db
+
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = BASE_DIR / "data"
@@ -20,9 +23,13 @@ def _read_json(filename: str) -> dict[str, Any]:
 
 
 def load_inventory() -> dict[str, Any]:
-    """Load Kashmir master inventory for destinations, hotels, vehicles, etc."""
+    """Load tenant master inventory for destinations, hotels, vehicles, etc."""
 
-    return _read_json("kashmir_inventory.json")
+    if not is_database_configured():
+        raise RuntimeError("DATABASE_URL is required to load inventory")
+
+    with db_session() as session:
+        return load_inventory_from_db(session, DEFAULT_TENANT_SLUG)
 
 
 def load_sample_proposal() -> dict[str, Any]:

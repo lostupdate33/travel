@@ -8,6 +8,39 @@
   --line: #d9dfd7;
 }
 
+.stars { color: #c48a2c; letter-spacing: 1px; margin: 4px 0 8px; }
+.extra-sections { display: grid; gap: 20px; }
+.section-block { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fff; }
+.mini-grid, .review-grid, .charge-grid, .contact-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.payment-grid { display: grid; grid-template-columns: 1fr 120px; gap: 16px; align-items: center; }
+.payment-grid span, .contact-grid span { display: block; margin-top: 5px; color: var(--muted); }
+.payment-grid img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.payment-qr-card {
+  margin: 0;
+  text-align: center;
+}
+.payment-qr-frame {
+  display: block;
+  width: 118px;
+  aspect-ratio: 1;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(17, 24, 39, .08);
+}
+.payment-qr-card figcaption {
+  margin-top: 7px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.charge-grid div, .review-grid article { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fffaf2; }
+.charge-grid span, .review-grid span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 5px; }
+.day-plan-list { padding-left: 18px; margin: 0 0 12px; }
+.day-plan-list li { margin-bottom: 8px; }
+
 * {
   box-sizing: border-box;
 }
@@ -133,7 +166,7 @@ li {
 
 .card {
   display: grid;
-  grid-template-columns: 230px 1fr;
+  grid-template-columns: minmax(230px, .82fr) 1fr;
   overflow: hidden;
   background: #fff;
   border: 1px solid var(--line);
@@ -141,11 +174,16 @@ li {
   page-break-inside: avoid;
 }
 
-.card img {
+.card-media {
+  min-width: 0;
+}
+
+.card-media img {
   width: 100%;
-  height: 100%;
-  min-height: 230px;
+  height: auto;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
+  display: block;
 }
 
 .card > div {
@@ -160,11 +198,23 @@ li {
 }
 
 .card footer {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  align-items: center;
   gap: 16px;
   border-top: 1px solid var(--line);
   padding-top: 12px;
+}
+
+.card footer img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.card footer div {
+  display: grid;
+  gap: 5px;
 }
 
 .card em {
@@ -214,3 +264,30 @@ ol {
   margin: 0;
 }
 
+@media (max-width: 720px) {
+  .cover,
+  .planning,
+  .notes,
+  .quick-facts,
+  .card,
+  .card footer {
+    grid-template-columns: 1fr;
+  }
+
+  .cover div,
+  .page {
+    padding: 28px;
+  }
+
+  h1 {
+    font-size: 40px;
+  }
+
+  h2 {
+    font-size: 28px;
+  }
+
+  .card ul {
+    grid-template-columns: 1fr;
+  }
+}

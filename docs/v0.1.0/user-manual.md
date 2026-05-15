@@ -85,7 +85,7 @@ http://localhost:3000
 3. Choose a proposal design from the `Template` dropdown.
 4. Edit `Trip Basics`, including adults and children.
 5. Use the day tabs to move between itinerary days.
-6. Change destination, hotel, meals, day title, summary, activities, or image path.
+6. Change destination, hotel, destination image, hotel image, meals, day title, summary, or activities.
 7. Use the plus button beside `Itinerary` to add a new day.
 8. Use `Remove this day` to delete the active day.
 9. Select the vehicle in the `Vehicle` section.
@@ -99,7 +99,6 @@ http://localhost:3000
 - `Kashmir Signature`: premium editorial proposal.
 - `Kashmir Luxury`: high-end visual proposal for premium trips.
 - `Kashmir Executive`: compact corporate/table-based proposal.
-- `Kashmir Family`: friendly visual proposal for family travel.
 
 ## Editing Dummy Data
 
@@ -149,13 +148,31 @@ Local image files live here:
 /home/neo/travelIdeate/backend/static/images
 ```
 
+Images are grouped by use:
+
+```text
+/home/neo/travelIdeate/backend/static/images/backgrounds
+/home/neo/travelIdeate/backend/static/images/destinations
+/home/neo/travelIdeate/backend/static/images/hotels
+```
+
 The sample proposal uses paths like:
 
 ```text
-/static/images/srinagar.jpg
+/static/images/destinations/srinagar/dal-lake.jpg
+/static/images/hotels/lalit-srinagar/garden-view.jpg
+/static/images/backgrounds/kashmir-cover.jpg
 ```
 
 Using local image paths is recommended because PDF generation can load them reliably through the backend.
+
+Recommended image preparation:
+
+- Cover/background images: `16:9`, at least `1920x1080`.
+- Destination images: `4:3`, at least `1600x1200`.
+- Hotel images: `4:3`, at least `1600x1200`.
+
+The templates use fixed aspect-ratio containers and focal points, so images do not need to be exact sizes. Add `focalPoint` in inventory when the important part of an image is not centered.
 
 ## Verification Commands
 

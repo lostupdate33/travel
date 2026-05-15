@@ -5,28 +5,60 @@
       "name": "Srinagar",
       "region": "Kashmir Valley",
       "summary": "Lakeside stays, Mughal gardens, old-city walks, and relaxed shikara evenings on Dal Lake.",
-      "image": "/static/images/srinagar.jpg"
+      "images": [
+        {
+          "id": "dal-lake",
+          "label": "Dal Lake",
+          "url": "/static/images/destinations/srinagar/dal-lake.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     },
     {
       "id": "gulmarg",
       "name": "Gulmarg",
       "region": "Pir Panjal Range",
       "summary": "Alpine meadows, gondola rides, snow views, pony trails, and quiet pine-framed viewpoints.",
-      "image": "/static/images/gulmarg.jpg"
+      "images": [
+        {
+          "id": "meadow",
+          "label": "Gulmarg Meadow",
+          "url": "/static/images/destinations/gulmarg/meadow.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     },
     {
       "id": "pahalgam",
       "name": "Pahalgam",
       "region": "Lidder Valley",
       "summary": "River valleys, pine forests, Betaab Valley, Aru Valley, and slow scenic drives.",
-      "image": "/static/images/pahalgam.jpg"
+      "images": [
+        {
+          "id": "lidder-valley",
+          "label": "Lidder Valley",
+          "url": "/static/images/destinations/pahalgam/lidder-valley.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     },
     {
       "id": "sonamarg",
       "name": "Sonamarg",
       "region": "Ganderbal",
       "summary": "Glacier routes, mountain passes, Sindh river views, and high-altitude landscapes.",
-      "image": "/static/images/sonamarg.jpg"
+      "images": [
+        {
+          "id": "glacier-view",
+          "label": "Glacier View",
+          "url": "/static/images/destinations/sonamarg/glacier-view.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     }
   ],
   "hotels": [
@@ -35,36 +67,120 @@
       "name": "The LaLiT Grand Palace Srinagar",
       "destinationId": "srinagar",
       "category": "5 Star",
-      "roomType": "Palace Garden View",
-      "mealPlan": "MAP",
-      "image": "/static/images/hotel-palace.jpg"
+      "roomType": "Double",
+      "defaultRoomNightRate": 18000,
+      "roomTypeRates": {
+        "Single": 15000,
+        "Double": 18000,
+        "Twin": 18500,
+        "Triple": 23000,
+        "Family": 28000,
+        "Suite": 34000
+      },
+      "mealPlanRates": {
+        "CP": 900,
+        "MAP": 1800,
+        "AP": 2600
+      },
+      "images": [
+        {
+          "id": "garden-view",
+          "label": "Garden View",
+          "url": "/static/images/hotels/lalit-srinagar/garden-view.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     },
     {
       "id": "vivanta-srinagar",
       "name": "Vivanta Dal View",
       "destinationId": "srinagar",
       "category": "5 Star",
-      "roomType": "Superior Charm Room",
-      "mealPlan": "Breakfast",
-      "image": "/static/images/hotel-dal.jpg"
+      "roomType": "Double",
+      "defaultRoomNightRate": 16000,
+      "roomTypeRates": {
+        "Single": 13500,
+        "Double": 16000,
+        "Twin": 16500,
+        "Triple": 21000,
+        "Family": 26000,
+        "Suite": 32000
+      },
+      "mealPlanRates": {
+        "CP": 850,
+        "MAP": 1700,
+        "AP": 2500
+      },
+      "images": [
+        {
+          "id": "dal-view",
+          "label": "Dal View",
+          "url": "/static/images/hotels/vivanta-srinagar/dal-view.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     },
     {
       "id": "khyber-gulmarg",
       "name": "The Khyber Himalayan Resort & Spa",
       "destinationId": "gulmarg",
       "category": "Luxury",
-      "roomType": "Premier Room",
-      "mealPlan": "MAP",
-      "image": "/static/images/resort.jpg"
+      "roomType": "Suite",
+      "defaultRoomNightRate": 28000,
+      "roomTypeRates": {
+        "Single": 22000,
+        "Double": 25000,
+        "Twin": 25500,
+        "Triple": 31000,
+        "Family": 38000,
+        "Suite": 28000
+      },
+      "mealPlanRates": {
+        "CP": 1200,
+        "MAP": 2400,
+        "AP": 3400
+      },
+      "images": [
+        {
+          "id": "resort-exterior",
+          "label": "Resort Exterior",
+          "url": "/static/images/hotels/khyber-gulmarg/resort-exterior.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     },
     {
       "id": "pine-pahalgam",
       "name": "Pahalgam Pine Retreat",
       "destinationId": "pahalgam",
       "category": "4 Star",
-      "roomType": "River View Room",
-      "mealPlan": "MAP",
-      "image": "/static/images/valley-stay.jpg"
+      "roomType": "Double",
+      "defaultRoomNightRate": 14000,
+      "roomTypeRates": {
+        "Single": 11000,
+        "Double": 14000,
+        "Twin": 14500,
+        "Triple": 18000,
+        "Family": 23000,
+        "Suite": 26000
+      },
+      "mealPlanRates": {
+        "CP": 700,
+        "MAP": 1400,
+        "AP": 2100
+      },
+      "images": [
+        {
+          "id": "river-view",
+          "label": "River View",
+          "url": "/static/images/hotels/pine-pahalgam/river-view.jpg",
+          "aspect": "4:3",
+          "focalPoint": "center"
+        }
+      ]
     }
   ],
   "vehicles": [
@@ -72,19 +188,22 @@
       "id": "ertiga",
       "name": "Maruti Ertiga",
       "capacity": "4 guests + luggage",
-      "bestFor": "Couples and small families"
+      "bestFor": "Couples and small families",
+      "defaultDayRate": 4500
     },
     {
       "id": "innova",
       "name": "Toyota Innova Crysta",
       "capacity": "5 guests + luggage",
-      "bestFor": "Premium family travel"
+      "bestFor": "Premium family travel",
+      "defaultDayRate": 6000
     },
     {
       "id": "tempo",
       "name": "Tempo Traveller",
       "capacity": "10-12 guests",
-      "bestFor": "Groups"
+      "bestFor": "Groups",
+      "defaultDayRate": 9000
     }
   ],
   "activities": [
@@ -111,11 +230,6 @@
       "id": "kashmir-executive",
       "name": "Kashmir Executive",
       "description": "A compact corporate-style proposal with tables, clear commercials, and dense itinerary detail."
-    },
-    {
-      "id": "kashmir-family",
-      "name": "Kashmir Family",
-      "description": "A warm visual proposal for families, with friendly cards and easy-to-scan day plans."
     }
   ]
 }

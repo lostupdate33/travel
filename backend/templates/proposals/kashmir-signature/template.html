@@ -3,18 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Base URL lets relative /static paths resolve when Playwright renders HTML. -->
     <base href="{{ proposal.assetBaseUrl }}" />
     <title>{{ proposal.trip.title }} - Proposal</title>
     <link rel="stylesheet" href="/static/css/proposals/kashmir-signature.css" />
+    <style>
+      :root {
+        --ink: {{ proposal.theme.textColor }};
+        --muted: {{ proposal.theme.mutedColor }};
+        --line: {{ proposal.theme.lineColor }};
+        --paper: {{ proposal.theme.paperColor }};
+        --moss: {{ proposal.theme.primaryColor }};
+        --lake: {{ proposal.theme.secondaryColor }};
+        --saffron: {{ proposal.theme.accentColor }};
+        --cream: {{ proposal.theme.surfaceColor }};
+        --wash: {{ proposal.theme.washColor }};
+      }
+    </style>
   </head>
   <body>
     <main class="proposal">
-      <!-- Cover page: strongest brand/customer signal and trip summary. -->
-      <section class="cover" style="background-image: linear-gradient(90deg, rgba(14, 28, 30, .82), rgba(14, 28, 30, .24)), url('{{ proposal.trip.coverImage }}');">
-        <div class="brand">{{ proposal.company.name }}</div>
+      <section class="cover" style="background-image: linear-gradient(90deg, rgba(12, 22, 21, .88), rgba(12, 22, 21, .36) 52%, rgba(12, 22, 21, .12)), url('{{ proposal.trip.coverImage }}');">
+        <header class="cover-nav">
+          <strong>{{ proposal.company.name }}</strong>
+          <span>Private Kashmir Proposal</span>
+        </header>
         <div class="cover-content">
-          <p class="eyebrow">Private Kashmir Travel Proposal</p>
+          <p class="eyebrow">Curated for {{ proposal.customer.name }}</p>
           <h1>{{ proposal.trip.title }}</h1>
           <p class="subtitle">{{ proposal.trip.subtitle }}</p>
           <div class="cover-meta">
@@ -23,86 +37,138 @@
             <span>Starts {{ proposal.trip.startDate }}</span>
           </div>
         </div>
-        <div class="prepared-for">
-          <span>Prepared for</span>
+        <footer class="prepared-for">
+          <span>Prepared by {{ proposal.company.name }}</span>
           <strong>{{ proposal.customer.name }}</strong>
-        </div>
+        </footer>
       </section>
 
-      <!-- Overview page: compact executive summary before the itinerary details. -->
-      <section class="page intro-grid">
-        <div>
+      <section class="page overview-page">
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>{{ proposal.trip.title }}</span>
+        </header>
+        <div class="overview-hero">
           <p class="section-kicker">Overview</p>
           <h2>Your Kashmir Journey</h2>
           <p class="lead">{{ proposal.trip.subtitle }}</p>
         </div>
-        <div class="summary-panel">
-          <div>
-            <span>Duration</span>
-            <strong>{{ proposal.trip.duration }}</strong>
-          </div>
-          <div>
-            <span>Vehicle</span>
-            <strong>{{ proposal.vehicle.name }}</strong>
-          </div>
-          <div>
-            <span>Total Quote</span>
-            <strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
-          </div>
-        </div>
-      </section>
-
-      <!-- Itinerary page(s): each proposal.days item becomes one visual day card. -->
-      <section class="page">
-        <p class="section-kicker">Itinerary</p>
-        <h2>Day Wise Plan</h2>
-        <div class="days">
+        <div class="route-panel">
           {% for day in proposal.days %}
-            <article class="day-card">
-              <img src="{{ day.image }}" alt="{{ day.destination }}" />
-              <div class="day-body">
-                <div class="day-topline">
-                  <span>Day {{ day.dayNumber }}</span>
-                  <span>{{ day.destination }}</span>
-                </div>
-                <h3>{{ day.title }}</h3>
-                <p>{{ day.summary }}</p>
-                <div class="activity-list">
-                  <!-- Activities are rendered as chips so a day remains scannable. -->
-                  {% for activity in day.activities %}
-                    <span>{{ activity }}</span>
-                  {% endfor %}
-                </div>
-                <div class="stay-line">
-                  <strong>{{ day.hotelName }}</strong>
-                  <span>{{ day.meals }}</span>
-                </div>
-              </div>
-            </article>
+            {% if loop.first or proposal.days[loop.index0 - 1].destination != day.destination %}
+              <span>{{ day.destination }}</span>
+            {% endif %}
           {% endfor %}
         </div>
+        <div class="stat-grid">
+          <article>
+            <span>Duration</span>
+            <strong>{{ proposal.trip.duration }}</strong>
+          </article>
+          <article>
+            <span>Guests</span>
+            <strong>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</strong>
+          </article>
+          <article>
+            <span>Private Vehicle</span>
+            <strong>{{ proposal.vehicle.name }}</strong>
+          </article>
+          <article class="quote-stat">
+            <span>Total Quote</span>
+            <strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
+          </article>
+        </div>
+        <div class="overview-note">
+          <strong>Designed as a private, paced itinerary.</strong>
+          <p>Every day balances scenic movement, comfortable stays, and space for weather, local rules, and guest pace.</p>
+        </div>
       </section>
 
-      <!-- Commercial page: selected transport and quote summary. -->
-      <section class="page split">
-        <div>
-          <p class="section-kicker">Transport</p>
+      <section class="page itinerary-title">
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Itinerary</span>
+        </header>
+        <p class="section-kicker">Itinerary</p>
+        <h2>Day Wise Plan</h2>
+        <p class="lead">A visual journey through destinations, stays, activities, and meal plans.</p>
+      </section>
+
+      {% for day in proposal.days %}
+        <article class="page day-card">
+          <header class="page-header">
+            <span>{{ proposal.trip.title }}</span>
+            <span>Day {{ day.dayNumber }}</span>
+          </header>
+          <div class="day-number">{{ "%02d"|format(day.dayNumber) }}</div>
+          <div class="day-heading">
+            <p class="section-kicker">Day {{ day.dayNumber }}</p>
+            <h2>{{ day.title }}</h2>
+          </div>
+          <section class="destination-feature">
+            <img src="{{ day.destinationImageUrl }}" alt="{{ day.destination }}" style="object-position: {{ day.destinationImagePosition }};" />
+            <div>
+              <p class="section-kicker">Destination</p>
+              <h3>{{ day.destination }}</h3>
+              <ul class="feature-list">{% for bullet in day.dayPlanBullets %}<li>{{ bullet }}</li>{% endfor %}</ul>
+              {% if day.destinationDescription %}<p>{{ day.destinationDescription }}</p>{% endif %}
+              <div class="activity-list">
+                {% for activity in day.activities %}
+                  <span>{{ activity }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+          <section class="stay-card">
+            {% if day.hotelImageUrl %}
+              <img src="{{ day.hotelImageUrl }}" alt="{{ day.hotelName }}" style="object-position: {{ day.hotelImagePosition }};" />
+            {% endif %}
+            <div class="stay-copy">
+              <p class="section-kicker">Stay</p>
+              <h3>{{ day.hotelName }}</h3>
+              {% if day.hotelCategory or day.hotelRoomType %}
+                <p class="stay-meta">{{ day.hotelCategory }}{% if day.hotelCategory and day.hotelRoomType %} · {% endif %}{{ day.hotelRoomType }}</p>
+              {% endif %}
+              {% if day.hotelStars %}<div class="stars">{{ day.hotelStars }}</div>{% endif %}
+              {% if day.hotelSummaryItems %}
+                <div class="hotel-features">
+                  {% for item in day.hotelSummaryItems %}
+                    <span>{{ item }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <strong class="meal-badge">{{ day.meals }}</strong>
+            </div>
+          </section>
+        </article>
+      {% endfor %}
+
+      <section class="page quote-page">
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Commercials</span>
+        </header>
+        <div class="quote-hero">
+          <p class="section-kicker">Private Transport</p>
           <h2>{{ proposal.vehicle.name }}</h2>
           <p>{{ proposal.vehicle.note }}</p>
-          <div class="vehicle-badge">{{ proposal.vehicle.capacity }}</div>
+          <span>{{ proposal.vehicle.capacity }}</span>
         </div>
-        <div class="price-box">
-          <h3>Price Summary</h3>
+        <aside class="price-box">
+          <p class="section-kicker">Total Quote</p>
+          <strong class="grand-total">{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
           <div><span>Package Cost</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
           <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
           <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
-          <div class="total"><span>Total Quote</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong></div>
-        </div>
+        </aside>
       </section>
 
-      <!-- Inclusions/exclusions page: standard sales proposal terms. -->
       <section class="page terms-grid">
-        <div>
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Scope</span>
+        </header>
+        <div class="terms-panel included">
           <p class="section-kicker">Included</p>
           <h2>Inclusions</h2>
           <ul>
@@ -111,7 +177,7 @@
             {% endfor %}
           </ul>
         </div>
-        <div>
+        <div class="terms-panel excluded">
           <p class="section-kicker">Not Included</p>
           <h2>Exclusions</h2>
           <ul>
@@ -122,19 +188,120 @@
         </div>
       </section>
 
-      <!-- Closing page: operational notes and company contact details. -->
+      {% if proposal.sections.showChecklist %}
+        <section class="page extra-section-page">
+          <header class="page-header">
+            <span>{{ proposal.company.name }}</span>
+            <span>Booking Details</span>
+          </header>
+          <div class="section-block">
+            <p class="section-kicker">Checklist</p>
+            <h2>{{ proposal.sections.checklist.title }}</h2>
+            <p>{{ proposal.sections.checklist.description }}</p>
+            <div class="mini-grid">
+              {% for group in proposal.sections.checklist.groups %}
+                <div>
+                  <h3>{{ group.title }}</h3>
+                  <ul>{% for item in group["items"] %}<li>{{ item }}</li>{% endfor %}</ul>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+      {% endif %}
+
+      <section class="page extra-section-page">
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Payment and Cancellation</span>
+        </header>
+        <div class="section-block">
+          <p class="section-kicker">Payment</p>
+          <h2>Payment and Booking Process</h2>
+          <p>{{ proposal.sections.payment.payment_terms }}</p>
+          <div class="payment-grid">
+            <div>
+              <strong>{{ proposal.sections.payment.bank_account_name }}</strong>
+              <span>A/C {{ proposal.sections.payment.bank_account_number }}</span>
+              <span>IFSC {{ proposal.sections.payment.ifsc_code }}</span>
+              <span>UPI {{ proposal.sections.payment.upi_id }}</span>
+            </div>
+            {% if proposal.sections.payment.qrUrl %}
+              <figure class="payment-qr-card">
+                <span class="payment-qr-frame">
+                  <img src="{{ proposal.sections.payment.qrUrl }}" alt="Payment QR" />
+                </span>
+                <figcaption>Scan to pay</figcaption>
+              </figure>
+            {% endif %}
+          </div>
+        </div>
+        <div class="section-block">
+          <p class="section-kicker">Cancellation</p>
+          <h2>{{ proposal.sections.cancellationPolicy.title }}</h2>
+          <ul>{% for item in proposal.sections.cancellationPolicy.terms %}<li>{{ item }}</li>{% endfor %}</ul>
+          <div class="charge-grid">
+            {% for charge in proposal.sections.cancellationPolicy.charges %}
+              <div><span>{{ charge.window }}</span><strong>{{ charge.charge }}</strong></div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="page extra-section-page">
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Guest Notes</span>
+        </header>
+        {% if proposal.sections.showReviews and proposal.sections.reviews %}
+          <div class="section-block">
+            <p class="section-kicker">Reviews</p>
+            <h2>Client Reviews</h2>
+            <div class="review-grid">
+              {% for review in proposal.sections.reviews %}
+                <article><strong>{{ review.client_name }}</strong><span>{{ "★" * review.rating }} · {{ review.source_label }}</span><p>{{ review.review_text }}</p></article>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+        {% if proposal.sections.showRemarks and proposal.sections.remarks %}
+          <div class="section-block">
+            <p class="section-kicker">Remarks</p>
+            <h2>Additional Remarks</h2>
+            <ul>{% for item in proposal.sections.remarks %}<li>{{ item }}</li>{% endfor %}</ul>
+          </div>
+        {% endif %}
+        <div class="section-block contact-block">
+          <p class="section-kicker">Booking Contact</p>
+          <h2>{{ proposal.sections.contact.contact_name }}</h2>
+          <p>{{ proposal.sections.contact.role_title }}</p>
+          <div class="contact-grid">
+            <span>{{ proposal.sections.contact.phone }}</span>
+            <span>{{ proposal.sections.contact.whatsapp }}</span>
+            <span>{{ proposal.sections.contact.email }}</span>
+            <span>{{ proposal.sections.contact.website }}</span>
+          </div>
+        </div>
+      </section>
+
       <section class="page closing">
-        <p class="section-kicker">Terms</p>
-        <h2>Important Notes</h2>
-        <ol>
-          {% for item in proposal.terms %}
-            <li>{{ item }}</li>
-          {% endfor %}
-        </ol>
-        <footer>
-          <strong>{{ proposal.company.name }}</strong>
-          <span>{{ proposal.company.email }} · {{ proposal.company.phone }}</span>
-        </footer>
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Terms</span>
+        </header>
+        <div class="section-block closing-card">
+          <p class="section-kicker">Terms</p>
+          <h2>Important Notes</h2>
+          <ol>
+            {% for item in proposal.terms %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ol>
+          <footer>
+            <strong>{{ proposal.company.name }}</strong>
+            <span>{{ proposal.company.email }} · {{ proposal.company.phone }}</span>
+          </footer>
+        </div>
       </section>
     </main>
   </body>

@@ -5,6 +5,11 @@
   --ink: #15201e;
   --muted: #63716e;
   --line: #d9dfd9;
+  --field: #fbfcfa;
+  --soft: #edf4f2;
+  --row: #fbfcfa;
+  --topbar: rgba(255, 255, 255, .76);
+  --danger-soft: #faeeee;
   --moss: #52684d;
   --lake: #2e7073;
   --saffron: #cf8f32;
@@ -43,6 +48,24 @@ textarea {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 260px 1fr;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.app-shell[data-theme="dark"] {
+  --bg: #101614;
+  --panel: #19211f;
+  --ink: #edf3ef;
+  --muted: #9caaa4;
+  --line: #303b37;
+  --field: #111815;
+  --soft: #21302d;
+  --row: #141c19;
+  --topbar: rgba(20, 28, 25, .82);
+  --danger-soft: #321f1d;
+  --moss: #789071;
+  --lake: #62aeb0;
+  --danger: #e08b82;
 }
 
 .sidebar {
@@ -75,16 +98,22 @@ nav {
   gap: 8px;
 }
 
-nav a {
+nav button {
+  text-align: left;
+  background: transparent;
   color: #cbd4cf;
   text-decoration: none;
   padding: 12px;
   border-radius: 8px;
 }
 
-nav a.active {
+nav button.active {
   background: rgba(255, 255, 255, .1);
   color: #fff;
+}
+
+nav button:disabled {
+  color: #75817b;
 }
 
 .template-card {
@@ -112,7 +141,7 @@ nav a.active {
   justify-content: space-between;
   padding: 20px 28px;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, .76);
+  background: var(--topbar);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
@@ -124,12 +153,30 @@ nav a.active {
   font-size: 28px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .workspace {
   /* Left column edits data; right column previews the rendered proposal. */
   display: grid;
   grid-template-columns: minmax(460px, 560px) minmax(520px, 1fr);
   gap: 22px;
   padding: 22px;
+}
+
+.inventory-workspace {
+  display: grid;
+  gap: 22px;
+  padding: 22px;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
 }
 
 .editor {
@@ -178,6 +225,98 @@ nav a.active {
   gap: 12px;
 }
 
+.theme-swatches {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: -2px 0 12px;
+}
+
+.theme-swatches button {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  padding: 10px;
+  text-align: left;
+}
+
+.theme-swatches button.selected {
+  border-color: var(--lake);
+  box-shadow: 0 0 0 3px rgba(46, 112, 115, .12);
+}
+
+.theme-swatches span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-swatches i {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  height: 22px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.theme-swatches b {
+  display: block;
+}
+
+.subtitle-formats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.subtitle-formats button {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  padding: 10px;
+  text-align: left;
+}
+
+.subtitle-formats button.selected {
+  border-color: var(--lake);
+  box-shadow: 0 0 0 3px rgba(46, 112, 115, .12);
+}
+
+.subtitle-formats span,
+.subtitle-formats small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle-formats span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.subtitle-formats small {
+  display: -webkit-box;
+  min-height: 34px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 label {
   display: grid;
   gap: 7px;
@@ -193,7 +332,7 @@ textarea {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #fbfcfa;
+  background: var(--field);
   color: var(--ink);
   padding: 11px 12px;
   outline: none;
@@ -211,6 +350,53 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(46, 112, 115, .12);
 }
 
+.stepper-field {
+  min-width: 0;
+}
+
+.stepper-control {
+  display: grid;
+  grid-template-columns: 42px minmax(46px, 1fr) 42px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+}
+
+.stepper-control:focus-within {
+  border-color: var(--lake);
+  box-shadow: 0 0 0 3px rgba(46, 112, 115, .12);
+}
+
+.stepper-control button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  background: var(--soft);
+  color: var(--lake);
+}
+
+.stepper-control input {
+  appearance: textfield;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 6px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.stepper-control input::-webkit-outer-spin-button,
+.stepper-control input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.stepper-control input:focus {
+  box-shadow: none;
+}
+
 button {
   border: 0;
   cursor: pointer;
@@ -219,6 +405,15 @@ button {
 button:disabled {
   cursor: not-allowed;
   opacity: .6;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 .primary-button,
@@ -240,7 +435,7 @@ button:disabled {
 }
 
 .secondary-button {
-  background: #edf4f2;
+  background: var(--soft);
   color: var(--lake);
   padding: 11px 12px;
   width: 100%;
@@ -248,38 +443,356 @@ button:disabled {
 }
 
 .danger-button {
-  background: #faeeee;
+  background: var(--danger-soft);
   color: var(--danger);
   padding: 10px 12px;
+}
+
+.text-button {
+  color: var(--lake);
+  background: transparent;
+  font-weight: 700;
 }
 
 .icon-button {
   width: 34px;
   height: 34px;
-  background: #edf4f2;
+  background: var(--soft);
   color: var(--lake);
+}
+
+.theme-toggle {
+  flex: 0 0 auto;
+}
+
+.status-line {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.consistency-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.consistency-note .text-button {
+  flex: 0 0 auto;
+}
+
+.admin-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--row);
+}
+
+.admin-row strong,
+.admin-row span {
+  display: block;
+}
+
+.admin-row span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-thumb {
+  width: 92px;
+  aspect-ratio: 4 / 3;
+  border-radius: 7px;
+  object-fit: cover;
+  background: var(--soft);
+}
+
+.toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 8px 0 12px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--row);
+}
+
+.toggle-row input {
+  width: auto;
+}
+
+.remarks-editor {
+  display: grid;
+  gap: 10px;
+}
+
+.remark-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.day-bulk-field {
+  display: grid;
+  gap: 6px;
+}
+
+.day-bulk-control {
+  display: grid;
+  grid-template-columns: minmax(148px, 1fr) 112px;
+  align-items: end;
+  gap: 10px;
+}
+
+.day-bulk-control label,
+.day-bulk-control .stepper-field {
+  margin-bottom: 0;
+}
+
+.compact-button {
+  width: 112px;
+  min-height: 41px;
+  padding-block: 10px;
+  white-space: nowrap;
+}
+
+.day-bulk-feedback {
+  min-height: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.color-grid input {
+  height: 42px;
+  padding: 4px;
+}
+
+.room-rate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pricing-lines {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 12px;
+  min-width: 0;
+}
+
+.pricing-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px 96px 90px auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.pricing-line .stepper-field {
+  margin-bottom: 0;
+}
+
+.pricing-quantity-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--row);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pricing-item-cell {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pricing-item-cell span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pricing-quantity .stepper-control {
+  grid-template-columns: 34px minmax(36px, 1fr) 34px;
+}
+
+.pricing-quantity .stepper-control button {
+  min-height: 38px;
+}
+
+.pricing-line strong {
+  color: var(--ink);
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pricing-line-head {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pricing-line-head span:nth-child(4) {
+  text-align: right;
+}
+
+.pricing-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pricing-summary {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--row);
+}
+
+.pricing-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pricing-summary strong {
+  color: var(--ink);
+}
+
+.pricing-summary .total {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.day-picker {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.day-picker-body {
+  min-width: 0;
+}
+
+.active-day-summary {
+  display: none;
 }
 
 .day-tabs {
   /* Horizontal day tabs support longer itineraries without widening the page. */
   display: flex;
   gap: 8px;
+  justify-content: safe center;
   overflow-x: auto;
   padding-bottom: 8px;
-  margin-bottom: 14px;
 }
 
 .day-tabs button {
   flex: 0 0 auto;
-  background: #eef1ed;
+  min-width: 64px;
+  background: var(--soft);
   color: var(--muted);
-  border-radius: 999px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.day-tabs button span,
+.day-tabs button strong {
+  display: block;
+  line-height: 1.1;
+}
+
+.day-tabs button span {
+  font-size: 11px;
+}
+
+.day-tabs button strong {
+  margin-top: 2px;
+  font-size: 16px;
 }
 
 .day-tabs button.selected {
   background: var(--moss);
   color: #fff;
+}
+
+.day-step {
+  flex: 0 0 auto;
+}
+
+.pricing-panel {
+  display: grid;
+  gap: 18px;
 }
 
 .two-column {
@@ -318,16 +831,42 @@ iframe {
 }
 
 @media (max-width: 1180px) {
-  /* Tablet layout: remove sidebar and stack editor above preview. */
+  /* Tablet layout: turn the sidebar into a compact top navigation. */
   .app-shell {
     grid-template-columns: 1fr;
   }
 
   .sidebar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+  }
+
+  .sidebar nav {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    overflow-x: auto;
+  }
+
+  .sidebar nav button {
+    flex: 0 0 auto;
+    padding: 10px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .template-card {
     display: none;
   }
 
   .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-grid {
     grid-template-columns: 1fr;
   }
 
@@ -339,6 +878,20 @@ iframe {
 
 @media (max-width: 720px) {
   /* Phone layout: single-column controls and a less rigid header. */
+  .sidebar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .sidebar nav {
+    justify-content: flex-start;
+  }
+
+  .sidebar nav button {
+    padding: 9px 11px;
+  }
+
   .topbar {
     height: auto;
     align-items: flex-start;
@@ -346,13 +899,122 @@ iframe {
     flex-direction: column;
   }
 
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .workspace {
     padding: 12px;
   }
 
+  .inventory-workspace {
+    padding: 12px;
+  }
+
+  .admin-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-actions {
+    justify-content: flex-start;
+  }
+
   .form-grid,
   .price-inputs,
-  .two-column {
+  .two-column,
+  .toggle-grid,
+  .color-grid,
+  .room-rate-grid {
     grid-template-columns: 1fr;
+  }
+
+  .day-bulk-control {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-button {
+    width: 100%;
+  }
+
+  .pricing-line {
+    grid-template-columns: 112px minmax(112px, 1fr) auto;
+  }
+
+  .pricing-item-cell,
+  .pricing-line-head span:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .pricing-line strong,
+  .pricing-line-head span:nth-child(4) {
+    grid-column: 1 / 3;
+  }
+
+  .pricing-line strong {
+    text-align: left;
+  }
+
+  .pricing-line-head span:nth-child(4) {
+    text-align: left;
+  }
+
+  .pricing-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .day-picker {
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .day-step {
+    width: 42px;
+    height: auto;
+    min-height: 84px;
+  }
+
+  .active-day-summary {
+    display: grid;
+    gap: 3px;
+    margin-bottom: 8px;
+    min-width: 0;
+  }
+
+  .active-day-summary strong {
+    font-size: 14px;
+  }
+
+  .active-day-summary span {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .day-tabs {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    padding-bottom: 0;
+    overflow-x: visible;
+  }
+
+  .day-tabs button {
+    flex: 1 1 54px;
+    max-width: 72px;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 6px 4px;
+  }
+
+  .day-tabs button span {
+    font-size: 10px;
+  }
+
+  .day-tabs button strong {
+    font-size: 15px;
   }
 }

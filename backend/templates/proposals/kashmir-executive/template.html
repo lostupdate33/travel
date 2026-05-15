@@ -6,67 +6,94 @@
     <base href="{{ proposal.assetBaseUrl }}" />
     <title>{{ proposal.trip.title }} - Executive Proposal</title>
     <link rel="stylesheet" href="/static/css/proposals/kashmir-executive.css" />
+    <style>
+      :root {
+        --ink: {{ proposal.theme.textColor }};
+        --muted: {{ proposal.theme.mutedColor }};
+        --line: {{ proposal.theme.lineColor }};
+        --paper: {{ proposal.theme.paperColor }};
+        --header: {{ proposal.theme.primaryColor }};
+        --accent: {{ proposal.theme.secondaryColor }};
+        --surface: {{ proposal.theme.surfaceColor }};
+        --wash: {{ proposal.theme.washColor }};
+      }
+    </style>
   </head>
   <body>
     <main class="proposal">
       <section class="cover">
-        <div>
+        <div class="cover-band" style="background-image: linear-gradient(90deg, rgba(20, 32, 30, .88), rgba(20, 32, 30, .2)), url('{{ proposal.trip.coverImage }}');"></div>
+        <div class="cover-copy">
           <p class="label">{{ proposal.company.name }}</p>
           <h1>{{ proposal.trip.title }}</h1>
           <p>{{ proposal.trip.subtitle }}</p>
         </div>
-        <aside>
-          <span>Prepared for</span>
-          <strong>{{ proposal.customer.name }}</strong>
-          <span>Duration</span>
-          <strong>{{ proposal.trip.duration }}</strong>
-          <span>Total quote</span>
-          <strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
+        <aside class="executive-card">
+          <span>Prepared for</span><strong>{{ proposal.customer.name }}</strong>
+          <span>Duration</span><strong>{{ proposal.trip.duration }}</strong>
+          <span>Travelers</span><strong>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</strong>
+          <span>Total quote</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
         </aside>
       </section>
 
-      <section class="page">
+      <section class="page summary-page">
+        <header class="page-header"><span>{{ proposal.company.name }}</span><span>Executive Summary</span></header>
         <p class="label">Summary</p>
-        <table class="summary">
-          <tr><th>Start date</th><td>{{ proposal.trip.startDate }}</td></tr>
-          <tr><th>Travelers</th><td>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</td></tr>
-          <tr><th>Vehicle</th><td>{{ proposal.vehicle.name }} · {{ proposal.vehicle.capacity }}</td></tr>
-          <tr><th>Prepared by</th><td>{{ proposal.company.name }} · {{ proposal.company.phone }}</td></tr>
+        <h2>Proposal Snapshot</h2>
+        <div class="summary-grid">
+          <article><span>Start date</span><strong>{{ proposal.trip.startDate }}</strong></article>
+          <article><span>Travelers</span><strong>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</strong></article>
+          <article><span>Vehicle</span><strong>{{ proposal.vehicle.name }}</strong><small>{{ proposal.vehicle.capacity }}</small></article>
+          <article><span>Prepared by</span><strong>{{ proposal.company.name }}</strong><small>{{ proposal.company.phone }}</small></article>
+        </div>
+        <table class="commercial-table">
+          <tr><th>Package cost</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</td></tr>
+          <tr><th>Taxes</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</td></tr>
+          <tr><th>Discount</th><td>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</td></tr>
+          <tr class="total"><th>Total quote</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</td></tr>
         </table>
       </section>
 
       <section class="page">
+        <header class="page-header"><span>{{ proposal.trip.title }}</span><span>Itinerary</span></header>
         <p class="label">Itinerary</p>
-        <table class="itinerary">
-          <thead>
-            <tr>
-              <th>Day</th>
-              <th>Destination</th>
-              <th>Plan</th>
-              <th>Stay / Meals</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for day in proposal.days %}
-              <tr>
-                <td>{{ day.dayNumber }}</td>
-                <td>{{ day.destination }}</td>
-                <td>
-                  <strong>{{ day.title }}</strong>
-                  <p>{{ day.summary }}</p>
+        <h2>Day Plan</h2>
+        <div class="itinerary">
+          {% for day in proposal.days %}
+            <article class="day-block">
+              <header>
+                <span>Day {{ day.dayNumber }}</span>
+                <h3>{{ day.title }}</h3>
+              </header>
+              <div class="day-grid">
+                <img src="{{ day.destinationImageUrl }}" alt="{{ day.destination }}" style="object-position: {{ day.destinationImagePosition }};" />
+                <div>
+                  <p class="label">Destination</p>
+                  <h4>{{ day.destination }}</h4>
+                  <ul class="day-plan-list">{% for bullet in day.dayPlanBullets %}<li>{{ bullet }}</li>{% endfor %}</ul>
                   <small>{{ day.activities|join(", ") }}</small>
-                </td>
-                <td>{{ day.hotelName }}<br /><span>{{ day.meals }}</span></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                </div>
+                <div class="stay-summary">
+                  {% if day.hotelImageUrl %}<img src="{{ day.hotelImageUrl }}" alt="{{ day.hotelName }}" style="object-position: {{ day.hotelImagePosition }};" />{% endif %}
+                  <div>
+                    <p class="label">Stay</p>
+                    <h4>{{ day.hotelName }}</h4>
+                    {% if day.hotelCategory or day.hotelRoomType %}<p>{{ day.hotelCategory }}{% if day.hotelCategory and day.hotelRoomType %} · {% endif %}{{ day.hotelRoomType }}</p>{% endif %}
+                    {% if day.hotelStars %}<div class="stars">{{ day.hotelStars }}</div>{% endif %}
+                    <strong>{{ day.meals }}</strong>
+                  </div>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
       </section>
 
       <section class="page commercial">
+        <header class="page-header"><span>{{ proposal.company.name }}</span><span>Commercials</span></header>
         <div>
           <p class="label">Commercials</p>
-          <h2>Price summary</h2>
+          <h2>Price Summary</h2>
           <table>
             <tr><th>Package cost</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</td></tr>
             <tr><th>Taxes</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</td></tr>
@@ -74,14 +101,16 @@
             <tr class="total"><th>Total quote</th><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</td></tr>
           </table>
         </div>
-        <div>
+        <div class="transport-card">
           <p class="label">Transport</p>
           <h2>{{ proposal.vehicle.name }}</h2>
           <p>{{ proposal.vehicle.note }}</p>
+          <strong>{{ proposal.vehicle.capacity }}</strong>
         </div>
       </section>
 
       <section class="page lists">
+        <header class="page-header"><span>{{ proposal.company.name }}</span><span>Scope and Terms</span></header>
         <div>
           <p class="label">Inclusions</p>
           <ul>{% for item in proposal.inclusions %}<li>{{ item }}</li>{% endfor %}</ul>
@@ -94,6 +123,22 @@
           <p class="label">Terms</p>
           <ol>{% for item in proposal.terms %}<li>{{ item }}</li>{% endfor %}</ol>
         </div>
+      </section>
+
+      <section class="page extra-sections">
+        <header class="page-header"><span>{{ proposal.company.name }}</span><span>Booking Details</span></header>
+        {% if proposal.sections.showChecklist %}
+          <div class="section-block"><p class="label">Checklist</p><h2>{{ proposal.sections.checklist.title }}</h2><p>{{ proposal.sections.checklist.description }}</p><div class="mini-grid">{% for group in proposal.sections.checklist.groups %}<div><h3>{{ group.title }}</h3><ul>{% for item in group["items"] %}<li>{{ item }}</li>{% endfor %}</ul></div>{% endfor %}</div></div>
+        {% endif %}
+        <div class="section-block"><p class="label">Payment</p><h2>Payment and Booking Process</h2><p>{{ proposal.sections.payment.payment_terms }}</p><div class="payment-grid"><div><strong>{{ proposal.sections.payment.bank_account_name }}</strong><span>A/C {{ proposal.sections.payment.bank_account_number }}</span><span>IFSC {{ proposal.sections.payment.ifsc_code }}</span><span>UPI {{ proposal.sections.payment.upi_id }}</span></div>{% if proposal.sections.payment.qrUrl %}<figure class="payment-qr-card"><span class="payment-qr-frame"><img src="{{ proposal.sections.payment.qrUrl }}" alt="Payment QR" /></span><figcaption>Scan to pay</figcaption></figure>{% endif %}</div></div>
+        <div class="section-block"><p class="label">Cancellation</p><h2>{{ proposal.sections.cancellationPolicy.title }}</h2><ul>{% for item in proposal.sections.cancellationPolicy.terms %}<li>{{ item }}</li>{% endfor %}</ul><div class="charge-grid">{% for charge in proposal.sections.cancellationPolicy.charges %}<div><span>{{ charge.window }}</span><strong>{{ charge.charge }}</strong></div>{% endfor %}</div></div>
+        {% if proposal.sections.showReviews and proposal.sections.reviews %}
+          <div class="section-block"><p class="label">Reviews</p><h2>Client Reviews</h2><div class="review-grid">{% for review in proposal.sections.reviews %}<article><strong>{{ review.client_name }}</strong><span>{{ "★" * review.rating }} · {{ review.source_label }}</span><p>{{ review.review_text }}</p></article>{% endfor %}</div></div>
+        {% endif %}
+        {% if proposal.sections.showRemarks and proposal.sections.remarks %}
+          <div class="section-block"><p class="label">Remarks</p><h2>Additional Remarks</h2><ul>{% for item in proposal.sections.remarks %}<li>{{ item }}</li>{% endfor %}</ul></div>
+        {% endif %}
+        <div class="section-block contact-block"><p class="label">Booking Contact</p><h2>{{ proposal.sections.contact.contact_name }}</h2><p>{{ proposal.sections.contact.role_title }}</p><div class="contact-grid"><span>{{ proposal.sections.contact.phone }}</span><span>{{ proposal.sections.contact.whatsapp }}</span><span>{{ proposal.sections.contact.email }}</span><span>{{ proposal.sections.contact.website }}</span></div></div>
       </section>
     </main>
   </body>

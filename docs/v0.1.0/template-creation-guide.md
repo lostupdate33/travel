@@ -25,12 +25,11 @@ The template decides presentation. The proposal JSON supplies content.
 
 ## Ready-To-Use Templates
 
-This version includes four ready-to-use templates:
+This version includes three active ready-to-use templates:
 
 - `kashmir-signature`: premium editorial layout with visual day cards.
 - `kashmir-luxury`: high-end editorial layout with gold accents and large typography.
 - `kashmir-executive`: compact corporate layout with tables and dense trip details.
-- `kashmir-family`: warm family-friendly layout with visual cards.
 
 The `kashmir-signature` template uses:
 
@@ -357,11 +356,18 @@ day.dayNumber
 day.date
 day.title
 day.destination
+day.destinationId
+day.destinationImageId
+day.destinationImageUrl
+day.destinationImagePosition
 day.summary
 day.activities
+day.hotelId
 day.hotelName
+day.hotelImageId
+day.hotelImageUrl
+day.hotelImagePosition
 day.meals
-day.image
 ```
 
 Text sections:
@@ -455,6 +461,9 @@ Before considering a template ready:
 
 - It has a clear cover page.
 - It uses real destination or hotel images.
+- Destination images are treated as the primary day visual.
+- Hotel images are shown as a supporting stay visual.
+- Image containers use stable aspect ratios and stack cleanly on phones.
 - It has readable type sizes in A4 PDF.
 - Long itinerary text does not overlap.
 - Day cards do not split awkwardly.

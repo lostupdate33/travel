@@ -68,7 +68,10 @@ travelIdeate/
     static/
       css/
         proposals/             Per-template proposal PDF stylesheets
-      images/                  Local proposal image assets
+      images/
+        backgrounds/           Cover/background images
+        destinations/          Destination and itinerary images
+        hotels/                Hotel inventory images
     templates/
       proposals/
         kashmir-signature/
@@ -98,8 +101,8 @@ This version does not use a database yet. It uses JSON to establish the shape of
 
 Inventory data:
 
-- `destinations`: Kashmir places like Srinagar, Gulmarg, Pahalgam, Sonamarg
-- `hotels`: hotel options mapped to destinations
+- `destinations`: Kashmir places like Srinagar, Gulmarg, Pahalgam, Sonamarg, with destination image choices
+- `hotels`: hotel options mapped to destinations, with hotel image choices
 - `vehicles`: vehicle options
 - `activities`: reusable activity names
 - `templates`: available proposal templates
@@ -163,7 +166,7 @@ The user can edit:
 - meals
 - day summary
 - activities
-- day image URL/path
+- destination and hotel image selections
 - vehicle
 - price fields
 
@@ -184,26 +187,24 @@ The `kashmir-signature` template is a Jinja2 HTML file. It reads the proposal ob
 
 Each template has its own CSS file under `backend/static/css/proposals/`. For example, `kashmir-signature` uses `backend/static/css/proposals/kashmir-signature.css`. These files control both the browser preview and the PDF layout, including A4 print sizing through `@page`.
 
-The renderer injects `assetBaseUrl`, defaulting to `http://localhost:8000`, into the proposal view model. This allows relative image and CSS paths like `/static/images/srinagar.jpg` to resolve correctly inside Playwright.
+The renderer injects `assetBaseUrl`, defaulting to `http://localhost:8000`, into the proposal view model. This allows relative image and CSS paths like `/static/images/destinations/srinagar/dal-lake.jpg` to resolve correctly inside Playwright.
 
 ## Current Limitations
 
 - No authentication yet.
 - No database yet.
-- No saved proposal records yet.
-- Four proposal templates exist: `kashmir-signature`, `kashmir-luxury`, `kashmir-executive`, and `kashmir-family`.
+- Proposals are generated in memory and are not saved.
+- Three proposal templates are active: `kashmir-signature`, `kashmir-luxury`, and `kashmir-executive`.
 - Inventory editing is not implemented yet.
 - The frontend stores edits only in browser state for the current session.
 - Pricing total is recalculated only when the total button is clicked.
-- The image paths are editable text fields, not a media picker yet.
+- Destination and hotel images are selected from inventory-backed dropdowns; custom media upload is not implemented yet.
 
 ## Planned Iteration Path
 
-1. Add persistent storage with PostgreSQL.
-2. Add proposal save, duplicate, and list pages.
-3. Add inventory CRUD screens for destinations, hotels, vehicles, and activities.
-4. Add customer records.
-5. Add user/company authentication.
-6. Add more proposal templates and template-specific settings.
+1. Add persistent storage with PostgreSQL for tenant inventory.
+2. Add inventory CRUD screens for destinations, hotels, vehicles, and activities.
+3. Add user/company authentication.
+4. Add more proposal templates and template-specific settings.
 7. Add template options: logo, colors, section visibility, cover image.
 8. Add proposal sharing links and approval status.

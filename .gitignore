@@ -16,6 +16,8 @@ out/
 .env
 .env.*
 !.env.example
+*.pdf
+backend/static/images/payment/
 
 # OS/editor noise
 .DS_Store

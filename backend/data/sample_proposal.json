@@ -1,6 +1,7 @@
 {
   "slug": "kashmir-signature-rahul-sharma",
   "templateId": "kashmir-signature",
+  "visualTheme": "alpine-mist",
   "company": {
     "name": "ValleyCraft Travels",
     "email": "hello@valleycraft.example",
@@ -20,14 +21,110 @@
       "adults": 2,
       "children": 1
     },
-    "coverImage": "/static/images/srinagar.jpg"
+    "coverImage": "/static/images/backgrounds/kashmir-cover.jpg"
   },
   "pricing": {
     "currency": "INR",
-    "base": 124000,
-    "taxes": 6200,
+    "defaultMealPlan": "MAP",
+    "taxPercent": 5,
+    "base": 151800,
+    "taxes": 7590,
     "discount": 5000,
-    "total": 125200
+    "total": 154390,
+    "isCustomized": false,
+    "lineItems": [
+      {
+        "id": "hotel-day-1-lalit-srinagar",
+        "type": "hotel",
+        "source": "generated",
+        "sourceId": "lalit-srinagar",
+        "dayNumber": 1,
+        "roomType": "Double",
+        "mealPlan": "MAP",
+        "roomRate": 18000,
+        "mealPlanRate": 1800,
+        "label": "Day 1: The LaLiT Grand Palace Srinagar - Double",
+        "quantity": 1,
+        "unitPrice": 19800,
+        "amount": 19800,
+        "isManual": false
+      },
+      {
+        "id": "hotel-day-2-lalit-srinagar",
+        "type": "hotel",
+        "source": "generated",
+        "sourceId": "lalit-srinagar",
+        "dayNumber": 2,
+        "roomType": "Double",
+        "mealPlan": "MAP",
+        "roomRate": 18000,
+        "mealPlanRate": 1800,
+        "label": "Day 2: The LaLiT Grand Palace Srinagar - Double",
+        "quantity": 1,
+        "unitPrice": 19800,
+        "amount": 19800,
+        "isManual": false
+      },
+      {
+        "id": "hotel-day-3-khyber-gulmarg",
+        "type": "hotel",
+        "source": "generated",
+        "sourceId": "khyber-gulmarg",
+        "dayNumber": 3,
+        "roomType": "Suite",
+        "mealPlan": "MAP",
+        "roomRate": 28000,
+        "mealPlanRate": 2400,
+        "label": "Day 3: The Khyber Himalayan Resort & Spa - Suite",
+        "quantity": 1,
+        "unitPrice": 30400,
+        "amount": 30400,
+        "isManual": false
+      },
+      {
+        "id": "hotel-day-4-khyber-gulmarg",
+        "type": "hotel",
+        "source": "generated",
+        "sourceId": "khyber-gulmarg",
+        "dayNumber": 4,
+        "roomType": "Suite",
+        "mealPlan": "MAP",
+        "roomRate": 28000,
+        "mealPlanRate": 2400,
+        "label": "Day 4: The Khyber Himalayan Resort & Spa - Suite",
+        "quantity": 1,
+        "unitPrice": 30400,
+        "amount": 30400,
+        "isManual": false
+      },
+      {
+        "id": "hotel-day-5-pine-pahalgam",
+        "type": "hotel",
+        "source": "generated",
+        "sourceId": "pine-pahalgam",
+        "dayNumber": 5,
+        "roomType": "Double",
+        "mealPlan": "MAP",
+        "roomRate": 14000,
+        "mealPlanRate": 1400,
+        "label": "Day 5: Pahalgam Pine Retreat - Double",
+        "quantity": 1,
+        "unitPrice": 15400,
+        "amount": 15400,
+        "isManual": false
+      },
+      {
+        "id": "vehicle-toyota-innova-crysta",
+        "type": "vehicle",
+        "source": "generated",
+        "sourceId": "Toyota Innova Crysta",
+        "label": "Toyota Innova Crysta",
+        "quantity": 6,
+        "unitPrice": 6000,
+        "amount": 36000,
+        "isManual": false
+      }
+    ]
   },
   "vehicle": {
     "name": "Toyota Innova Crysta",
@@ -39,67 +136,97 @@
       "dayNumber": 1,
       "date": "2026-06-12",
       "title": "Arrival in Srinagar",
+      "destinationId": "srinagar",
       "destination": "Srinagar",
+      "destinationImageId": "dal-lake",
       "summary": "Airport pickup, hotel check-in, Dal Lake shikara ride, and an easy evening by the boulevard.",
       "activities": ["Airport meet and assist", "Shikara ride on Dal Lake", "Boulevard evening walk"],
+      "hotelId": "lalit-srinagar",
       "hotelName": "The LaLiT Grand Palace Srinagar",
-      "meals": "Dinner",
-      "image": "/static/images/srinagar.jpg"
+      "roomType": "Double",
+      "rooms": 1,
+      "hotelImageId": "garden-view",
+      "mealPlan": "MAP"
     },
     {
       "dayNumber": 2,
       "date": "2026-06-13",
       "title": "Srinagar Gardens and Old City",
+      "destinationId": "srinagar",
       "destination": "Srinagar",
+      "destinationImageId": "dal-lake",
       "summary": "A slow day across Nishat, Shalimar, Chashme Shahi, and a short old-city craft trail.",
       "activities": ["Mughal garden tour", "Old-city craft stop", "Optional Kashmiri wazwan dinner"],
+      "hotelId": "lalit-srinagar",
       "hotelName": "The LaLiT Grand Palace Srinagar",
-      "meals": "Breakfast and Dinner",
-      "image": "/static/images/sonamarg.jpg"
+      "roomType": "Double",
+      "rooms": 1,
+      "hotelImageId": "garden-view",
+      "mealPlan": "MAP"
     },
     {
       "dayNumber": 3,
       "date": "2026-06-14",
       "title": "Srinagar to Gulmarg",
+      "destinationId": "gulmarg",
       "destination": "Gulmarg",
+      "destinationImageId": "meadow",
       "summary": "Drive through Tangmarg to Gulmarg, settle into the resort, and visit the gondola base area.",
       "activities": ["Private transfer to Gulmarg", "Gondola base visit", "Meadow walk"],
+      "hotelId": "khyber-gulmarg",
       "hotelName": "The Khyber Himalayan Resort & Spa",
-      "meals": "Breakfast and Dinner",
-      "image": "/static/images/gulmarg.jpg"
+      "roomType": "Suite",
+      "rooms": 1,
+      "hotelImageId": "resort-exterior",
+      "mealPlan": "MAP"
     },
     {
       "dayNumber": 4,
       "date": "2026-06-15",
       "title": "Gulmarg Leisure Day",
+      "destinationId": "gulmarg",
       "destination": "Gulmarg",
+      "destinationImageId": "meadow",
       "summary": "A flexible day for gondola phase one, short trails, photography, and resort time.",
       "activities": ["Gulmarg gondola phase one", "Pine forest viewpoints", "Cafe stop"],
+      "hotelId": "khyber-gulmarg",
       "hotelName": "The Khyber Himalayan Resort & Spa",
-      "meals": "Breakfast and Dinner",
-      "image": "/static/images/resort.jpg"
+      "roomType": "Suite",
+      "rooms": 1,
+      "hotelImageId": "resort-exterior",
+      "mealPlan": "MAP"
     },
     {
       "dayNumber": 5,
       "date": "2026-06-16",
       "title": "Gulmarg to Pahalgam",
+      "destinationId": "pahalgam",
       "destination": "Pahalgam",
+      "destinationImageId": "lidder-valley",
       "summary": "Scenic drive to Pahalgam with saffron fields and river valley views en route.",
       "activities": ["Drive via Pampore", "Lidder river viewpoint", "Local market walk"],
+      "hotelId": "pine-pahalgam",
       "hotelName": "Pahalgam Pine Retreat",
-      "meals": "Breakfast and Dinner",
-      "image": "/static/images/pahalgam.jpg"
+      "roomType": "Double",
+      "rooms": 1,
+      "hotelImageId": "river-view",
+      "mealPlan": "MAP"
     },
     {
       "dayNumber": 6,
       "date": "2026-06-17",
       "title": "Pahalgam Valleys and Departure",
+      "destinationId": "pahalgam",
       "destination": "Pahalgam",
+      "destinationImageId": "lidder-valley",
       "summary": "Visit Betaab Valley or Aru Valley before returning to Srinagar airport.",
       "activities": ["Betaab Valley excursion", "Aru Valley scenic drive", "Airport drop"],
+      "hotelId": "",
       "hotelName": "Checkout",
-      "meals": "Breakfast",
-      "image": "/static/images/valley-stay.jpg"
+      "roomType": "",
+      "rooms": 1,
+      "hotelImageId": "",
+      "mealPlan": "CP"
     }
   ],
   "inclusions": [
@@ -119,5 +246,16 @@
     "Rooms are subject to availability at the time of confirmation.",
     "Prices may change during peak dates, weather disruptions, or hotel inventory changes.",
     "Local union transport rules may apply in Gulmarg, Pahalgam, and Sonamarg."
+  ],
+  "selectedSections": {
+    "showChecklist": true,
+    "checklistId": "kashmir_essentials",
+    "cancellationPolicyId": "standard",
+    "showReviews": true,
+    "showRemarks": true
+  },
+  "remarks": [
+    "The itinerary can be adjusted for weather, local advisories, and guest pace.",
+    "Final hotel confirmations are subject to availability at the time of booking."
   ]
 }

@@ -97,10 +97,12 @@ This line makes `/static/...` URLs work:
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 ```
 
-That is why this image path works in proposal JSON:
+That is why these image paths work in proposal JSON:
 
 ```text
-/static/images/srinagar.jpg
+/static/images/backgrounds/kashmir-cover.jpg
+/static/images/destinations/srinagar/dal-lake.jpg
+/static/images/hotels/lalit-srinagar/garden-view.jpg
 ```
 
 ## API Request Model
@@ -125,7 +127,7 @@ Both render and PDF endpoints accept the same payload:
 }
 ```
 
-This means the backend does not need to know where the proposal came from. In v0.1.0, it comes from frontend memory. In a future database version, the endpoint could accept an id and load the proposal internally.
+This means the backend does not need to know where the proposal came from. The current proposal comes from frontend memory and is always posted as a full payload.
 
 ## Backend Services
 
@@ -195,6 +197,19 @@ The renderer also injects:
 ```python
 "assetBaseUrl": "http://localhost:8000"
 ```
+
+Before rendering, the renderer enriches each proposal day from inventory:
+
+```text
+destinationId + destinationImageId -> day.destinationImageUrl
+hotelId + hotelImageId             -> day.hotelImageUrl
+```
+
+This keeps template files simple. Templates render `day.destinationImageUrl`
+and `day.hotelImageUrl`, while the frontend stores stable image ids selected
+from inventory. The renderer also passes `day.destinationImagePosition` and
+`day.hotelImagePosition` from image `focalPoint` metadata so templates can keep
+important image content visible inside responsive `aspect-ratio` containers.
 
 The template uses it here:
 
@@ -442,23 +457,20 @@ const hotelByDestination = useMemo(() => {
 }, [inventory]);
 ```
 
-Then the active day's destination name is matched to an inventory destination:
+Then the active day's destination id is matched to an inventory destination:
 
 ```js
-const selectedDestination = inventory.destinations.find((item) => item.name === day.destination);
+const selectedDestination = inventory.destinations.find((item) => item.id === day.destinationId);
 const availableHotels = hotelByDestination[selectedDestination?.id] || inventory.hotels;
 ```
 
-Current limitation:
+Proposal days keep both stable ids and display snapshots:
 
-- proposal days store destination by name
-- hotels store destination by id
-
-Future improvement:
-
-- store `destinationId` in each proposal day
-- display destination name through inventory lookup
-- this will avoid issues if a destination is renamed
+- `destinationId` maps to inventory destinations.
+- `hotelId` maps to inventory hotels.
+- `destinationImageId` selects one destination image from inventory.
+- `hotelImageId` selects one hotel image from inventory.
+- `destination` and `hotelName` remain display snapshots.
 
 ## Export PDF Flow In The Frontend
 
@@ -744,27 +756,18 @@ The simplest migration path:
 
 1. Keep API endpoint shapes stable.
 2. Replace file reads in `inventory.py` with database queries.
-3. Add new services for proposals, customers, and users.
-4. Change `/api/proposals/sample` into real proposal create/load endpoints.
-5. Keep the render endpoint accepting a full proposal snapshot until persistence is stable.
+3. Add new services for tenant inventory.
+4. Keep `/api/proposals/sample` as a starter proposal fixture for new in-memory proposals.
+5. Keep render/PDF endpoints accepting the full proposal payload.
 
 Suggested future tables:
 
 - companies
-- users
-- customers
 - destinations
 - hotels
 - vehicles
 - activities
 - proposal_templates
-- proposals
-- proposal_days
-- proposal_terms
-
-Important design rule:
-
-Once a proposal is sent to a customer, store a snapshot of selected hotel, vehicle, and activity details. Do not rely only on live inventory references, because inventory can change later.
 
 ## Risk Areas
 
@@ -842,14 +845,11 @@ Small improvements:
 Medium improvements:
 
 - create inventory management screens
-- add proposal save/load using a database
 - add image picker instead of raw URL/path field
 - split `frontend/app/page.js` into smaller components
 
 Larger improvements:
 
 - authentication and company accounts
-- proposal list and duplicate flow
-- customer CRM pipeline
 - multi-template system with template settings
 - online share link with customer approval

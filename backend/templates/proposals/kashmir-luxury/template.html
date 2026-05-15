@@ -6,102 +6,183 @@
     <base href="{{ proposal.assetBaseUrl }}" />
     <title>{{ proposal.trip.title }} - Luxury Proposal</title>
     <link rel="stylesheet" href="/static/css/proposals/kashmir-luxury.css" />
+    <style>
+      :root {
+        --ink: {{ proposal.theme.textColor }};
+        --muted: {{ proposal.theme.mutedColor }};
+        --line: {{ proposal.theme.lineColor }};
+        --paper: {{ proposal.theme.paperColor }};
+        --gold: {{ proposal.theme.accentColor }};
+        --forest: {{ proposal.theme.primaryColor }};
+        --cream: {{ proposal.theme.surfaceColor }};
+      }
+    </style>
   </head>
   <body>
     <main class="proposal">
-      <section class="cover" style="background-image: linear-gradient(90deg, rgba(18, 23, 22, .92), rgba(18, 23, 22, .34)), url('{{ proposal.trip.coverImage }}');">
-        <div class="brand-row">
+      <section class="cover" style="background-image: linear-gradient(90deg, rgba(13, 16, 15, .9), rgba(13, 16, 15, .42) 54%, rgba(13, 16, 15, .12)), url('{{ proposal.trip.coverImage }}');">
+        <header class="cover-top">
           <strong>{{ proposal.company.name }}</strong>
           <span>Private Kashmir Journey</span>
-        </div>
+        </header>
         <div class="cover-copy">
           <p class="kicker">Luxury proposal</p>
           <h1>{{ proposal.trip.title }}</h1>
           <p>{{ proposal.trip.subtitle }}</p>
         </div>
-        <div class="cover-footer">
-          <div>
-            <span>Prepared for</span>
-            <strong>{{ proposal.customer.name }}</strong>
-          </div>
-          <div>
-            <span>Journey length</span>
-            <strong>{{ proposal.trip.duration }}</strong>
-          </div>
-          <div>
-            <span>Investment</span>
-            <strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
-          </div>
-        </div>
+        <footer class="cover-footer">
+          <div><span>Prepared for</span><strong>{{ proposal.customer.name }}</strong></div>
+          <div><span>Journey length</span><strong>{{ proposal.trip.duration }}</strong></div>
+          <div><span>Investment</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong></div>
+        </footer>
       </section>
 
       <section class="page overview">
-        <div>
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>{{ proposal.trip.title }}</span>
+        </header>
+        <div class="overview-copy">
           <p class="kicker">At a glance</p>
           <h2>Designed for an unhurried Kashmir escape</h2>
           <p>{{ proposal.trip.subtitle }}</p>
         </div>
         <div class="stat-grid">
-          <div><span>Start</span><strong>{{ proposal.trip.startDate }}</strong></div>
-          <div><span>Guests</span><strong>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</strong></div>
-          <div><span>Vehicle</span><strong>{{ proposal.vehicle.name }}</strong></div>
-          <div><span>Plan</span><strong>{{ proposal.trip.duration }}</strong></div>
+          <article><span>Start</span><strong>{{ proposal.trip.startDate }}</strong></article>
+          <article><span>Guests</span><strong>{{ proposal.trip.travelers.adults }} Adults{% if proposal.trip.travelers.children %}, {{ proposal.trip.travelers.children }} Children{% endif %}</strong></article>
+          <article><span>Vehicle</span><strong>{{ proposal.vehicle.name }}</strong></article>
+          <article><span>Plan</span><strong>{{ proposal.trip.duration }}</strong></article>
         </div>
+        <aside class="route-line">
+          {% for day in proposal.days %}
+            {% if loop.first or proposal.days[loop.index0 - 1].destination != day.destination %}
+              <span>{{ day.destination }}</span>
+            {% endif %}
+          {% endfor %}
+        </aside>
       </section>
 
-      <section class="page">
-        <p class="kicker">Curated itinerary</p>
-        <h2>Day-by-day experience</h2>
-        <div class="timeline">
-          {% for day in proposal.days %}
-            <article class="day">
-              <div class="day-number">{{ "%02d"|format(day.dayNumber) }}</div>
-              <img src="{{ day.image }}" alt="{{ day.destination }}" />
-              <div>
-                <span>{{ day.destination }} · {{ day.meals }}</span>
-                <h3>{{ day.title }}</h3>
-                <p>{{ day.summary }}</p>
-                <div class="chips">
-                  {% for activity in day.activities %}
-                    <em>{{ activity }}</em>
-                  {% endfor %}
-                </div>
-                <strong class="hotel">{{ day.hotelName }}</strong>
+      {% for day in proposal.days %}
+        <article class="page day-page">
+          <header class="page-header">
+            <span>{{ proposal.trip.title }}</span>
+            <span>Day {{ day.dayNumber }}</span>
+          </header>
+          <section class="day-hero">
+            <img src="{{ day.destinationImageUrl }}" alt="{{ day.destination }}" style="object-position: {{ day.destinationImagePosition }};" />
+            <div class="day-title">
+              <span>{{ "%02d"|format(day.dayNumber) }}</span>
+              <p class="kicker">Curated day</p>
+              <h2>{{ day.title }}</h2>
+            </div>
+          </section>
+          <section class="experience-grid">
+            <div class="experience-copy">
+              <p class="kicker">Destination</p>
+              <h3>{{ day.destination }}</h3>
+              <ul class="feature-list">{% for bullet in day.dayPlanBullets %}<li>{{ bullet }}</li>{% endfor %}</ul>
+              {% if day.destinationDescription %}<p>{{ day.destinationDescription }}</p>{% endif %}
+              <div class="chips">
+                {% for activity in day.activities %}
+                  <em>{{ activity }}</em>
+                {% endfor %}
               </div>
-            </article>
-          {% endfor %}
-        </div>
-      </section>
+            </div>
+            <div class="stay-panel">
+              {% if day.hotelImageUrl %}
+                <img src="{{ day.hotelImageUrl }}" alt="{{ day.hotelName }}" style="object-position: {{ day.hotelImagePosition }};" />
+              {% endif %}
+              <div>
+                <p class="kicker">Private stay</p>
+                <h3>{{ day.hotelName }}</h3>
+                {% if day.hotelCategory or day.hotelRoomType %}
+                  <p class="stay-meta">{{ day.hotelCategory }}{% if day.hotelCategory and day.hotelRoomType %} · {% endif %}{{ day.hotelRoomType }}</p>
+                {% endif %}
+                {% if day.hotelStars %}<div class="stars">{{ day.hotelStars }}</div>{% endif %}
+                {% if day.hotelSummaryItems %}
+                  <div class="hotel-features">{% for item in day.hotelSummaryItems %}<span>{{ item }}</span>{% endfor %}</div>
+                {% endif %}
+                <strong class="meal-badge">{{ day.meals }}</strong>
+              </div>
+            </div>
+          </section>
+        </article>
+      {% endfor %}
 
       <section class="page quote">
-        <div>
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Investment</span>
+        </header>
+        <div class="quote-copy">
           <p class="kicker">Private transport</p>
           <h2>{{ proposal.vehicle.name }}</h2>
           <p>{{ proposal.vehicle.note }}</p>
           <span class="badge">{{ proposal.vehicle.capacity }}</span>
         </div>
         <div class="quote-card">
-          <h3>Quote summary</h3>
+          <p class="kicker">Total investment</p>
+          <strong class="total-quote">{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
           <div><span>Package cost</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
           <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
           <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
-          <div class="total"><span>Total</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong></div>
         </div>
       </section>
 
       <section class="page details">
-        <div>
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Scope</span>
+        </header>
+        <div class="scope-card">
           <p class="kicker">Included</p>
+          <h2>Inclusions</h2>
           <ul>{% for item in proposal.inclusions %}<li>{{ item }}</li>{% endfor %}</ul>
         </div>
-        <div>
+        <div class="scope-card">
           <p class="kicker">Not included</p>
+          <h2>Exclusions</h2>
           <ul>{% for item in proposal.exclusions %}<li>{{ item }}</li>{% endfor %}</ul>
         </div>
-        <div class="terms">
+        <div class="scope-card terms">
           <p class="kicker">Notes</p>
+          <h2>Important Terms</h2>
           <ol>{% for item in proposal.terms %}<li>{{ item }}</li>{% endfor %}</ol>
         </div>
+      </section>
+
+      <section class="page extra-sections">
+        <header class="page-header">
+          <span>{{ proposal.company.name }}</span>
+          <span>Booking Details</span>
+        </header>
+        {% if proposal.sections.showChecklist %}
+          <div class="section-block">
+            <p class="kicker">Checklist</p>
+            <h2>{{ proposal.sections.checklist.title }}</h2>
+            <p>{{ proposal.sections.checklist.description }}</p>
+            <div class="mini-grid">{% for group in proposal.sections.checklist.groups %}<div><h3>{{ group.title }}</h3><ul>{% for item in group["items"] %}<li>{{ item }}</li>{% endfor %}</ul></div>{% endfor %}</div>
+          </div>
+        {% endif %}
+        <div class="section-block">
+          <p class="kicker">Payment</p>
+          <h2>Payment and Booking Process</h2>
+          <p>{{ proposal.sections.payment.payment_terms }}</p>
+          <div class="payment-grid"><div><strong>{{ proposal.sections.payment.bank_account_name }}</strong><span>A/C {{ proposal.sections.payment.bank_account_number }}</span><span>IFSC {{ proposal.sections.payment.ifsc_code }}</span><span>UPI {{ proposal.sections.payment.upi_id }}</span></div>{% if proposal.sections.payment.qrUrl %}<figure class="payment-qr-card"><span class="payment-qr-frame"><img src="{{ proposal.sections.payment.qrUrl }}" alt="Payment QR" /></span><figcaption>Scan to pay</figcaption></figure>{% endif %}</div>
+        </div>
+        <div class="section-block">
+          <p class="kicker">Cancellation</p>
+          <h2>{{ proposal.sections.cancellationPolicy.title }}</h2>
+          <ul>{% for item in proposal.sections.cancellationPolicy.terms %}<li>{{ item }}</li>{% endfor %}</ul>
+          <div class="charge-grid">{% for charge in proposal.sections.cancellationPolicy.charges %}<div><span>{{ charge.window }}</span><strong>{{ charge.charge }}</strong></div>{% endfor %}</div>
+        </div>
+        {% if proposal.sections.showReviews and proposal.sections.reviews %}
+          <div class="section-block"><p class="kicker">Reviews</p><h2>Client Reviews</h2><div class="review-grid">{% for review in proposal.sections.reviews %}<article><strong>{{ review.client_name }}</strong><span>{{ "★" * review.rating }} · {{ review.source_label }}</span><p>{{ review.review_text }}</p></article>{% endfor %}</div></div>
+        {% endif %}
+        {% if proposal.sections.showRemarks and proposal.sections.remarks %}
+          <div class="section-block"><p class="kicker">Remarks</p><h2>Additional Remarks</h2><ul>{% for item in proposal.sections.remarks %}<li>{{ item }}</li>{% endfor %}</ul></div>
+        {% endif %}
+        <div class="section-block contact-block"><p class="kicker">Booking Contact</p><h2>{{ proposal.sections.contact.contact_name }}</h2><p>{{ proposal.sections.contact.role_title }}</p><div class="contact-grid"><span>{{ proposal.sections.contact.phone }}</span><span>{{ proposal.sections.contact.whatsapp }}</span><span>{{ proposal.sections.contact.email }}</span><span>{{ proposal.sections.contact.website }}</span></div></div>
       </section>
     </main>
   </body>

@@ -2,11 +2,13 @@ from pathlib import Path
 from typing import Any
 from copy import deepcopy
 import os
+import time
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .inventory import load_inventory
 from ..db.session import DEFAULT_TENANT_SLUG, db_session, is_database_configured
+from .media_access import MEDIA_ACCESS_TTL_SECONDS, sign_image_record, signed_media_url
 from .proposal_sections import enrich_sections, load_tenant_sections
 from .template_themes import resolve_template_theme
 from .trip_options import normalize_trip_duration
@@ -61,10 +63,33 @@ def _summary_bullets(summary: str) -> list[str]:
     return bullets or ([summary] if summary else [])
 
 
-def _enrich_proposal(proposal: dict[str, Any]) -> dict[str, Any]:
+def _authorize_proposal_media(proposal: dict[str, Any], tenant_id: str | None, expires_at: int) -> dict[str, Any]:
+    if proposal.get("trip", {}).get("coverImage"):
+        proposal["trip"]["coverImage"] = signed_media_url(proposal["trip"]["coverImage"], tenant_id, expires_at)
+
+    for section in ("payment", "contact"):
+        section_data = proposal.get("sections", {}).get(section, {})
+        if section_data.get("qrUrl"):
+            section_data["qrUrl"] = signed_media_url(section_data["qrUrl"], tenant_id, expires_at)
+
+    for day in proposal.get("days", []):
+        for field in ("image", "destinationImageUrl", "hotelImageUrl"):
+            if day.get(field):
+                day[field] = signed_media_url(day[field], tenant_id, expires_at)
+
+    for collection in ("destinations", "hotels", "backgroundImages"):
+        for item in proposal.get(collection, []):
+            sign_image_record(item, tenant_id, expires_at)
+            for image in item.get("images", []):
+                sign_image_record(image, tenant_id, expires_at)
+
+    return proposal
+
+
+def _enrich_proposal(proposal: dict[str, Any], tenant_slug: str = DEFAULT_TENANT_SLUG) -> dict[str, Any]:
     """Attach inventory-derived display fields before templates render."""
 
-    inventory = load_inventory()
+    inventory = load_inventory(tenant_slug)
     destination_by_id = {item["id"]: item for item in inventory.get("destinations", [])}
     destination_by_name = {item["name"]: item for item in inventory.get("destinations", [])}
     hotel_by_id = {item["id"]: item for item in inventory.get("hotels", [])}
@@ -75,7 +100,7 @@ def _enrich_proposal(proposal: dict[str, Any]) -> dict[str, Any]:
     tenant_sections = {}
     if is_database_configured():
         with db_session() as session:
-            tenant_sections = load_tenant_sections(session, DEFAULT_TENANT_SLUG)
+            tenant_sections = load_tenant_sections(session, tenant_slug)
 
     enriched = deepcopy(proposal)
     if "trip" in enriched:
@@ -137,7 +162,12 @@ def _enrich_proposal(proposal: dict[str, Any]) -> dict[str, Any]:
     return enriched
 
 
-def render_proposal_html(proposal: dict[str, Any], template_id: str) -> str:
+def render_proposal_html(
+    proposal: dict[str, Any],
+    template_id: str,
+    tenant_slug: str = DEFAULT_TENANT_SLUG,
+    tenant_id: str | None = None,
+) -> str:
     """Render one proposal snapshot into final HTML.
 
     The template is responsible only for presentation. The proposal object is
@@ -150,8 +180,12 @@ def render_proposal_html(proposal: dict[str, Any], template_id: str) -> str:
 
     # Playwright renders the HTML in a browser context, so relative assets need
     # an absolute base URL. The default points at the local FastAPI server.
+    enriched = _enrich_proposal(proposal, tenant_slug)
+    if tenant_id:
+        enriched = _authorize_proposal_media(enriched, tenant_id, int(time.time()) + MEDIA_ACCESS_TTL_SECONDS)
+
     view_model = {
-        **_enrich_proposal(proposal),
+        **enriched,
         "assetBaseUrl": proposal.get("assetBaseUrl", os.getenv("ASSET_BASE_URL", "http://localhost:8000")),
     }
     return template.render(proposal=view_model)

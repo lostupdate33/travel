@@ -12,6 +12,8 @@
 
 * {
   box-sizing: border-box;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 
 body {
@@ -73,12 +75,35 @@ p {
 }
 
 .cover {
+  position: relative;
+  overflow: hidden;
   color: #fff;
-  background-size: cover;
-  background-position: center;
   padding: 46px 50px;
   display: grid;
   grid-template-rows: auto 1fr auto;
+}
+
+.cover-image,
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-overlay {
+  background: linear-gradient(90deg, rgba(12, 22, 21, .88), rgba(12, 22, 21, .36) 52%, rgba(12, 22, 21, .12));
+}
+
+.cover-nav,
+.cover-content,
+.prepared-for {
+  position: relative;
+  z-index: 1;
 }
 
 .cover-nav,
@@ -501,6 +526,44 @@ p {
   gap: 18px;
   padding: 16px 0;
   border-top: 1px solid var(--line);
+}
+
+.quote-detail-table {
+  width: 100%;
+  margin: 0 0 16px;
+  border-collapse: collapse;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.quote-detail-table th,
+.quote-detail-table td {
+  padding: 9px 6px;
+  border-top: 1px solid var(--line);
+  text-align: right;
+}
+
+.quote-detail-table th {
+  color: var(--moss);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.quote-detail-table td {
+  color: var(--muted);
+}
+
+.quote-detail-table th:first-child,
+.quote-detail-table td:first-child {
+  text-align: left;
+}
+
+.quote-detail-table td:first-child {
+  max-width: 210px;
+  color: var(--ink);
+  font-weight: 700;
 }
 
 .terms-grid {

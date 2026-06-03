@@ -8,7 +8,11 @@
   --cream: #fffaf1;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
 
 body {
   margin: 0;
@@ -27,12 +31,35 @@ p, li { color: var(--muted); font-size: 15px; line-height: 1.58; }
 .cover, .page { min-height: 100vh; page-break-after: always; }
 
 .cover {
+  position: relative;
+  overflow: hidden;
   color: #fff;
-  background-size: cover;
-  background-position: center;
   padding: 48px 54px;
   display: grid;
   grid-template-rows: auto 1fr auto;
+}
+
+.cover-image,
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-overlay {
+  background: linear-gradient(90deg, rgba(13, 16, 15, .9), rgba(13, 16, 15, .42) 54%, rgba(13, 16, 15, .12));
+}
+
+.cover-top,
+.cover-copy,
+.cover-footer {
+  position: relative;
+  z-index: 1;
 }
 
 .cover-top,
@@ -299,6 +326,44 @@ p, li { color: var(--muted); font-size: 15px; line-height: 1.58; }
   gap: 20px;
   padding: 15px 0;
   border-top: 1px solid rgba(255, 255, 255, .18);
+}
+
+.quote-detail-table {
+  width: 100%;
+  margin: 0 0 16px;
+  border-collapse: collapse;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.quote-detail-table th,
+.quote-detail-table td {
+  padding: 9px 6px;
+  border-top: 1px solid rgba(255, 255, 255, .18);
+  text-align: right;
+}
+
+.quote-detail-table th {
+  color: rgba(223, 191, 124, .92);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.quote-detail-table td {
+  color: rgba(255, 255, 255, .76);
+}
+
+.quote-detail-table th:first-child,
+.quote-detail-table td:first-child {
+  text-align: left;
+}
+
+.quote-detail-table td:first-child {
+  max-width: 210px;
+  color: #fff;
+  font-weight: 700;
 }
 
 .details {

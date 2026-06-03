@@ -285,16 +285,37 @@ def attach_background_image(
     )
 
 
-def load_media_asset(session: Session, media_asset_id: str) -> dict[str, Any] | None:
-    return session.execute(
+def archive_background_image(session: Session, tenant_slug: str, image_id: str) -> None:
+    tenant_id = _tenant_id(session, tenant_slug)
+    row = session.execute(
         text(
             """
+            update background_images
+            set is_active = false,
+                archived_at = now(),
+                updated_at = now()
+            where tenant_id = :tenant_id and id = :id and is_active = true
+            returning id
+            """
+        ),
+        {"tenant_id": tenant_id, "id": image_id},
+    ).mappings().first()
+    if not row:
+        raise ValueError("Background image was not found")
+
+
+def load_media_asset(session: Session, media_asset_id: str, tenant_id: str | None = None) -> dict[str, Any] | None:
+    tenant_filter = "and tenant_id = :tenant_id" if tenant_id else ""
+    return session.execute(
+        text(
+            f"""
             select id, content, file_name, mime_type
             from media_assets
             where id = :id
+            {tenant_filter}
             """
         ),
-        {"id": media_asset_id},
+        {"id": media_asset_id, "tenant_id": tenant_id},
     ).mappings().first()
 
 

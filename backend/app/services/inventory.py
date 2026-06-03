@@ -22,14 +22,14 @@ def _read_json(filename: str) -> dict[str, Any]:
         return json.load(file)
 
 
-def load_inventory() -> dict[str, Any]:
+def load_inventory(tenant_slug: str = DEFAULT_TENANT_SLUG) -> dict[str, Any]:
     """Load tenant master inventory for destinations, hotels, vehicles, etc."""
 
     if not is_database_configured():
         raise RuntimeError("DATABASE_URL is required to load inventory")
 
     with db_session() as session:
-        return load_inventory_from_db(session, DEFAULT_TENANT_SLUG)
+        return load_inventory_from_db(session, tenant_slug)
 
 
 def load_sample_proposal() -> dict[str, Any]:

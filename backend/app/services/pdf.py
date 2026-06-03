@@ -2,7 +2,6 @@ import asyncio
 
 from playwright.async_api import async_playwright
 
-
 _playwright = None
 _browser = None
 _browser_lock = asyncio.Lock()
@@ -31,7 +30,10 @@ async def html_to_pdf(html: str) -> bytes:
 
     try:
         browser = await _get_browser()
-        page = await browser.new_page(viewport={"width": 1440, "height": 1200})
+        context = await browser.new_context(
+            viewport={"width": 1440, "height": 1200},
+        )
+        page = await context.new_page()
         try:
             await page.emulate_media(media="print")
 
@@ -46,7 +48,7 @@ async def html_to_pdf(html: str) -> bytes:
             )
             return pdf
         finally:
-            await page.close()
+            await context.close()
     except Exception as exc:
         # Keep the public API error simple; the original exception is chained for
         # server logs and debugging.

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="{{ invoice.assetBaseUrl }}" />
+    <title>{{ invoice.invoiceNumber or "Draft Invoice" }}</title>
+    <link rel="stylesheet" href="/static/css/invoices/gst-invoice.css" />
+  </head>
+  <body>
+    <main class="invoice-page">
+      <header class="invoice-header">
+        <div class="brand-lockup">
+          {% if invoice.supplier.logoUrl %}<img src="{{ invoice.supplier.logoUrl }}" alt="{{ invoice.supplier.tradeName or invoice.supplier.name }}" />{% endif %}
+          <div>
+            <p>Tax Invoice</p>
+            <h1>{{ invoice.supplier.tradeName or invoice.supplier.name }}</h1>
+          </div>
+        </div>
+        <div class="invoice-meta">
+          <span>Invoice No.</span>
+          <strong>{{ invoice.invoiceNumber or "Draft" }}</strong>
+          <span>Date</span>
+          <strong>{{ invoice.invoiceDate }}</strong>
+        </div>
+      </header>
+
+      <section class="party-grid">
+        <article>
+          <p class="label">Supplier</p>
+          <h2>{{ invoice.supplier.name }}</h2>
+          <p>{{ invoice.supplier.address }}</p>
+          <div class="fact-row"><span>GSTIN</span><strong>{{ invoice.supplier.gstin or "Not provided" }}</strong></div>
+          <div class="fact-row"><span>State</span><strong>{{ invoice.supplier.stateName }}{% if invoice.supplier.stateCode %} ({{ invoice.supplier.stateCode }}){% endif %}</strong></div>
+          <div class="fact-row"><span>Contact</span><strong>{{ invoice.supplier.phone }}{% if invoice.supplier.email %} · {{ invoice.supplier.email }}{% endif %}</strong></div>
+        </article>
+        <article>
+          <p class="label">Bill To</p>
+          <h2>{{ invoice.customer.name or "Customer" }}</h2>
+          <p>{{ invoice.customer.address }}</p>
+          <div class="fact-row"><span>GSTIN</span><strong>{{ invoice.customer.gstin or "Unregistered" }}</strong></div>
+          <div class="fact-row"><span>Place of supply</span><strong>{{ invoice.customer.stateName }}{% if invoice.customer.stateCode %} ({{ invoice.customer.stateCode }}){% endif %}</strong></div>
+          <div class="fact-row"><span>Reverse charge</span><strong>{{ invoice.reverseCharge }}</strong></div>
+        </article>
+      </section>
+
+      <table class="line-items">
+        <thead>
+          <tr>
+            <th>Service Particulars</th>
+            <th>SAC</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>Taxable</th>
+            <th>Tax</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in invoice.lineItems %}
+            <tr>
+              <td>{{ item.description }}</td>
+              <td>{{ item.sac }}</td>
+              <td>{{ "{:,.0f}".format(item.quantity) }}</td>
+              <td>{{ invoice.currency }} {{ "{:,.0f}".format(item.unitPrice) }}</td>
+              <td>{{ invoice.currency }} {{ "{:,.0f}".format(item.taxableValue) }}</td>
+              <td>{{ "{:,.0f}".format(item.taxPercent) }}%</td>
+              <td>{{ invoice.currency }} {{ "{:,.0f}".format(item.total) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <section class="totals-grid">
+        <article class="payment-card">
+          <p class="label">Payment</p>
+          <div>
+            <strong>{{ invoice.payment.bank_account_name or invoice.supplier.name }}</strong>
+            {% if invoice.payment.bank_account_number %}<span>A/C {{ invoice.payment.bank_account_number }}</span>{% endif %}
+            {% if invoice.payment.ifsc_code %}<span>IFSC {{ invoice.payment.ifsc_code }}</span>{% endif %}
+            {% if invoice.payment.upi_id %}<span>UPI {{ invoice.payment.upi_id }}</span>{% endif %}
+          </div>
+          {% if invoice.payment.qrUrl %}<img src="{{ invoice.payment.qrUrl }}" alt="Payment QR" />{% endif %}
+        </article>
+
+        <article class="totals-card">
+          <div><span>Taxable value</span><strong>{{ invoice.currency }} {{ "{:,.0f}".format(invoice.totals.taxableValue) }}</strong></div>
+          <div><span>CGST</span><strong>{{ invoice.currency }} {{ "{:,.0f}".format(invoice.totals.cgst) }}</strong></div>
+          <div><span>SGST</span><strong>{{ invoice.currency }} {{ "{:,.0f}".format(invoice.totals.sgst) }}</strong></div>
+          <div><span>IGST</span><strong>{{ invoice.currency }} {{ "{:,.0f}".format(invoice.totals.igst) }}</strong></div>
+          <div class="grand-total"><span>Invoice total</span><strong>{{ invoice.currency }} {{ "{:,.0f}".format(invoice.totals.grandTotal) }}</strong></div>
+        </article>
+      </section>
+
+      <footer class="invoice-footer">
+        <p>{{ invoice.notes }}</p>
+        <div class="signature-box">
+          <span>{{ invoice.supplier.signatureLabel }}</span>
+          <strong>Authorised Signatory</strong>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>

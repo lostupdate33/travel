@@ -17,15 +17,18 @@ def is_database_configured() -> bool:
 
 
 @contextmanager
-def db_session():
+def db_session(tenant_id: str | None = None):
     if SessionLocal is None:
         raise RuntimeError("DATABASE_URL is not configured")
 
     session = SessionLocal()
     try:
-        tenant_id = os.getenv("DEFAULT_TENANT_ID")
-        if tenant_id:
-            session.execute(text("select set_config('app.tenant_id', :tenant_id, true)"), {"tenant_id": tenant_id})
+        effective_tenant_id = tenant_id or os.getenv("DEFAULT_TENANT_ID")
+        if effective_tenant_id:
+            session.execute(
+                text("select set_config('app.tenant_id', :tenant_id, true)"),
+                {"tenant_id": effective_tenant_id},
+            )
         yield session
         session.commit()
     except Exception:

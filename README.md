@@ -41,6 +41,36 @@ DEFAULT_TENANT_SLUG='valleycraft' \
 uvicorn app.main:app --reload --port 8000
 ```
 
+Apply database migrations, then create the first tenant admin setup link:
+
+```bash
+cd backend
+psql 'postgresql://USER:PASSWORD@127.0.0.1:5432/travel_ideate' \
+  --file=db/20260515_auth.sql
+
+DATABASE_URL='postgresql+psycopg://USER:PASSWORD@127.0.0.1:5432/travel_ideate' \
+PYTHONPATH=. \
+.venv/bin/python scripts/create_tenant_admin.py \
+  --tenant-slug valleycraft \
+  --tenant-name 'ValleyCraft Travels' \
+  --admin-name 'Tenant Admin' \
+  --admin-email admin@example.com \
+  --app-url http://localhost:3000
+```
+
+Create the platform owner account used for the Owner Console from deployment
+secrets/environment variables:
+
+```bash
+cd backend
+DATABASE_URL='postgresql+psycopg://USER:PASSWORD@127.0.0.1:5432/travel_ideate' \
+PLATFORM_OWNER_EMAIL='owner@example.com' \
+PLATFORM_OWNER_NAME='App Owner' \
+PLATFORM_OWNER_PASSWORD='CHANGE_ME_LONG_RANDOM_PASSWORD_123' \
+PYTHONPATH=. \
+.venv/bin/python scripts/create_platform_owner.py
+```
+
 Frontend:
 
 ```bash

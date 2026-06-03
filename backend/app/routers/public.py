@@ -1,7 +1,8 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.dependencies import require_current_user
 from app.services.inventory import load_inventory, load_sample_proposal
 
 
@@ -14,10 +15,10 @@ def health() -> dict[str, str]:
 
 
 @router.get("/inventory")
-def inventory() -> dict[str, Any]:
-    return load_inventory()
+def inventory(current_user: dict[str, Any] = Depends(require_current_user)) -> dict[str, Any]:
+    return load_inventory(current_user["tenant_slug"])
 
 
 @router.get("/proposals/sample")
-def sample_proposal() -> dict[str, Any]:
+def sample_proposal(current_user: dict[str, Any] = Depends(require_current_user)) -> dict[str, Any]:
     return load_sample_proposal()

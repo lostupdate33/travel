@@ -92,7 +92,8 @@ export function syncPricingTotals(pricing) {
     taxes,
     discount,
     total: base + taxes - discount,
-    isCustomized: Boolean(pricing.isCustomized)
+    isCustomized: Boolean(pricing.isCustomized),
+    showDetailedQuote: Boolean(pricing.showDetailedQuote)
   };
 }
 

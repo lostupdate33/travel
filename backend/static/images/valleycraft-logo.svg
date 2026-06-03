@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">ValleyCraft Travels</title>
+  <rect width="120" height="120" rx="18" fill="#17211f"/>
+  <path d="M18 76l23-31 15 19 22-31 24 43H18z" fill="#edf4f2"/>
+  <path d="M18 80h84v8H18z" fill="#cf8f32"/>
+  <path d="M36 76l16-21 10 13 16-22 17 30H36z" fill="#2e7073"/>
+  <circle cx="84" cy="30" r="8" fill="#cf8f32"/>
+</svg>

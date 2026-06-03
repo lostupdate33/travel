@@ -20,7 +20,9 @@
   </head>
   <body>
     <main class="proposal">
-      <section class="cover" style="background-image: linear-gradient(90deg, rgba(13, 16, 15, .9), rgba(13, 16, 15, .42) 54%, rgba(13, 16, 15, .12)), url('{{ proposal.trip.coverImage }}');">
+      <section class="cover">
+        <img class="cover-image" src="{{ proposal.trip.coverImage }}" alt="Kashmir landscape" />
+        <div class="cover-overlay"></div>
         <header class="cover-top">
           <strong>{{ proposal.company.name }}</strong>
           <span>Private Kashmir Journey</span>
@@ -123,9 +125,23 @@
         <div class="quote-card">
           <p class="kicker">Total investment</p>
           <strong class="total-quote">{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.total) }}</strong>
-          <div><span>Package cost</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
-          <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
-          <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
+          {% if proposal.pricing.showDetailedQuote %}
+            <table class="quote-detail-table">
+              <thead><tr><th>Experience</th><th>Units</th><th>Tariff</th><th>Investment</th></tr></thead>
+              <tbody>
+                {% for item in proposal.pricing.lineItems %}
+                  <tr><td>{{ item.label }}</td><td>{{ "{:,.0f}".format(item.quantity) }}</td><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(item.unitPrice) }}</td><td>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(item.amount) }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div><span>Subtotal</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
+            <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
+            <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
+          {% else %}
+            <div><span>Package cost</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.base) }}</strong></div>
+            <div><span>Taxes</span><strong>{{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.taxes) }}</strong></div>
+            <div><span>Discount</span><strong>- {{ proposal.pricing.currency }} {{ "{:,.0f}".format(proposal.pricing.discount) }}</strong></div>
+          {% endif %}
         </div>
       </section>
 

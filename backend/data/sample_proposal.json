@@ -32,6 +32,7 @@
     "discount": 5000,
     "total": 154390,
     "isCustomized": false,
+    "showDetailedQuote": false,
     "lineItems": [
       {
         "id": "hotel-day-1-lalit-srinagar",

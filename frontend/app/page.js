@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
@@ -11,10 +12,12 @@ import {
   Hotel,
   Image as ImageIcon,
   IndianRupee,
+  LogOut,
   MapPin,
   Moon,
   Pencil,
   Plus,
+  Printer,
   RefreshCw,
   Save,
   Sparkles,
@@ -22,11 +25,21 @@ import {
   Trash2
 } from "lucide-react";
 
+import { LoginScreen, SetupPasswordScreen } from "../components/AuthScreens";
+import { PrintGuideModal } from "../components/PrintGuideModal";
 import { StepperInput } from "../components/StepperInput";
+import { openProposalPrintWindow } from "../lib/browserPrint";
 import {
   fetchBuilderData,
+  fetchCurrentUser,
+  fetchOwnerTenants,
   fetchProposalPdf,
+  fetchTeamMembers,
+  loginRequest,
+  logoutRequest,
+  saveProposalSnapshot,
   sendJsonRequest,
+  setupPasswordRequest,
   uploadImageRequest
 } from "../lib/api";
 import {
@@ -62,6 +75,14 @@ import {
   syncDaysToCount,
   syncPricingTotals
 } from "../lib/proposalPricing";
+
+const InvoicePanel = dynamic(() => import("../components/InvoicePanel").then((module) => module.InvoicePanel));
+const InvoicesDashboard = dynamic(() => import("../components/InvoicesDashboard").then((module) => module.InvoicesDashboard));
+const LeadsDashboard = dynamic(() => import("../components/LeadsDashboard").then((module) => module.LeadsDashboard));
+const OwnerPanel = dynamic(() => import("../components/OwnerPanel").then((module) => module.OwnerPanel));
+const PipelineDashboard = dynamic(() => import("../components/PipelineDashboard").then((module) => module.PipelineDashboard));
+const ProposalsDashboard = dynamic(() => import("../components/ProposalsDashboard").then((module) => module.ProposalsDashboard));
+const TeamPanel = dynamic(() => import("../components/TeamPanel").then((module) => module.TeamPanel));
 
 const SUBTITLE_FORMATS = [
   {
@@ -141,9 +162,17 @@ function maybeRegeneratePricing(proposal, inventory) {
 export default function Home() {
   // inventory is the Kashmir master data used by dropdowns.
   const [inventory, setInventory] = useState(null);
-  const [activeView, setActiveView] = useState("proposal");
+  const [activeView, setActiveView] = useState("leads");
+  const [authChecked, setAuthChecked] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [setupToken, setSetupToken] = useState(null);
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [setupForm, setSetupForm] = useState({ password: "", confirmPassword: "" });
+  const [authMessage, setAuthMessage] = useState("");
   const [theme, setTheme] = useThemePreference();
   const [adminMessage, setAdminMessage] = useState("");
+  const [isLoadingBuilderData, setIsLoadingBuilderData] = useState(false);
+  const [proposalSaveStatus, setProposalSaveStatus] = useState("idle");
   const [destinationForm, setDestinationForm] = useState(emptyDestinationForm);
   const [hotelForm, setHotelForm] = useState(emptyHotelForm);
   const [vehicleForm, setVehicleForm] = useState(emptyVehicleForm);
@@ -154,6 +183,18 @@ export default function Home() {
   const [backgroundImageFile, setBackgroundImageFile] = useState(null);
   const [subtitleFormat, setSubtitleFormat] = useState("curated");
   const [isSubtitleAuto, setIsSubtitleAuto] = useState(true);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamForm, setTeamForm] = useState({ name: "", email: "", role: "editor" });
+  const [teamSetupLink, setTeamSetupLink] = useState("");
+  const [ownerTenants, setOwnerTenants] = useState([]);
+  const [ownerTenantForm, setOwnerTenantForm] = useState({ slug: "", name: "", email: "", phone: "" });
+  const [ownerAdminForm, setOwnerAdminForm] = useState({ tenantSlug: "", name: "", email: "" });
+  const [ownerSetupLink, setOwnerSetupLink] = useState("");
+  const [showBrowserPrintGuide, setShowBrowserPrintGuide] = useState(false);
+  const [prefilledInvoice, setPrefilledInvoice] = useState(null);
+  const [prefilledInvoiceRecord, setPrefilledInvoiceRecord] = useState(null);
+  const [proposalLead, setProposalLead] = useState(null);
+  const [leadInitialFilters, setLeadInitialFilters] = useState({});
 
   // proposal is the editable working copy generated for the current session.
   const [proposal, setProposal] = useState(null);
@@ -164,7 +205,12 @@ export default function Home() {
   const [roomsStatus, setRoomsStatus] = useState("");
   const mealPlanStatusTimer = useRef(null);
   const roomsStatusTimer = useRef(null);
-  const previewHtml = useProposalPreview(proposal, (error) => setAdminMessage(error.message));
+  const proposalSaveStatusTimer = useRef(null);
+  const destinationFormRef = useRef(null);
+  const hotelFormRef = useRef(null);
+  const vehicleFormRef = useRef(null);
+  const dayPlanFormRef = useRef(null);
+  const previewHtml = useProposalPreview(activeView === "proposal" ? proposal : null, (error) => setAdminMessage(error.message));
   const generatedSubtitle = useMemo(
     () => proposal && inventory ? subtitleFromFormat(subtitleFormat, proposal, inventory) : "",
     [inventory, proposal, subtitleFormat]
@@ -186,27 +232,78 @@ export default function Home() {
     roomsStatusTimer.current = window.setTimeout(() => setRoomsStatus(""), 2800);
   }
 
+  function focusInventoryForm(ref) {
+    window.requestAnimationFrame(() => {
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  async function ensureBuilderData() {
+    if (inventory && proposal) {
+      return { inventory, proposal };
+    }
+
+    setIsLoadingBuilderData(true);
+    try {
+      const { inventory: loadedInventory, proposal: sampleProposal } = await fetchBuilderData();
+      const normalizedProposal = normalizePricing(sampleProposal, loadedInventory, { regenerate: true, preserveManual: true });
+      setInventory(loadedInventory);
+      setProposal(normalizedProposal);
+      setHotelForm((current) => ({
+        ...current,
+        destinationId: sampleProposal.days?.[0]?.destinationId || ""
+      }));
+      setDayPlanForm((current) => ({
+        ...current,
+        destinationId: sampleProposal.days?.[0]?.destinationId || ""
+      }));
+      return { inventory: loadedInventory, proposal: normalizedProposal };
+    } catch (error) {
+      setAdminMessage(error.message);
+      throw error;
+    } finally {
+      setIsLoadingBuilderData(false);
+    }
+  }
+
   useEffect(() => {
-    async function load() {
+    setSetupToken(new URLSearchParams(window.location.search).get("token") || "");
+  }, []);
+
+  useEffect(() => {
+    if (setupToken === null) return;
+    if (setupToken) {
+      setAuthChecked(true);
+      return;
+    }
+
+    async function loadSession() {
       try {
-        const { inventory: loadedInventory, proposal: sampleProposal } = await fetchBuilderData();
-        setInventory(loadedInventory);
-        setProposal(normalizePricing(sampleProposal, loadedInventory, { regenerate: true, preserveManual: true }));
-        setHotelForm((current) => ({
-          ...current,
-          destinationId: sampleProposal.days?.[0]?.destinationId || ""
-        }));
-        setDayPlanForm((current) => ({
-          ...current,
-          destinationId: sampleProposal.days?.[0]?.destinationId || ""
-        }));
-      } catch (error) {
-        setAdminMessage(error.message);
+        const { user } = await fetchCurrentUser();
+        setCurrentUser(user);
+      } catch {
+        setCurrentUser(null);
+      } finally {
+        setAuthChecked(true);
       }
     }
 
-    load();
-  }, []);
+    loadSession();
+  }, [setupToken]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    if (currentUser.isPlatformOwner && !currentUser.tenant_slug) {
+      setActiveView("owner");
+      setInventory(null);
+      setProposal(null);
+      return;
+    }
+
+    if (["proposal", "inventory"].includes(activeView)) {
+      ensureBuilderData().catch(() => {});
+    }
+  }, [activeView, currentUser]);
 
   useEffect(() => () => {
     if (mealPlanStatusTimer.current) {
@@ -214,6 +311,9 @@ export default function Home() {
     }
     if (roomsStatusTimer.current) {
       window.clearTimeout(roomsStatusTimer.current);
+    }
+    if (proposalSaveStatusTimer.current) {
+      window.clearTimeout(proposalSaveStatusTimer.current);
     }
   }, []);
 
@@ -593,6 +693,98 @@ export default function Home() {
     }
   }
 
+  async function saveCurrentProposal() {
+    if (!proposal) return;
+    setAdminMessage("");
+    setProposalSaveStatus("saving");
+    try {
+      const data = await saveProposalSnapshot(proposal, proposalLead?.id || "");
+      setAdminMessage(`Saved proposal for ${data.proposal.customerName}.`);
+      setProposalSaveStatus("saved");
+      if (proposalSaveStatusTimer.current) {
+        window.clearTimeout(proposalSaveStatusTimer.current);
+      }
+      proposalSaveStatusTimer.current = window.setTimeout(() => setProposalSaveStatus("idle"), 2200);
+    } catch (error) {
+      setAdminMessage(error.message);
+      setProposalSaveStatus("error");
+    }
+  }
+
+  function printInBrowser() {
+    if (!previewHtml) {
+      setAdminMessage("Proposal preview is still loading.");
+      return;
+    }
+
+    const printTitle = `${proposal?.trip?.title || "Travel Proposal"} - ${proposal?.customer?.name || "Customer"}`;
+    if (!openProposalPrintWindow({ previewHtml, printTitle })) {
+      setAdminMessage("Allow pop-ups to use browser PDF export.");
+    }
+  }
+
+  function openBrowserPrintGuide() {
+    if (!previewHtml) {
+      setAdminMessage("Proposal preview is still loading.");
+      return;
+    }
+    setShowBrowserPrintGuide(true);
+  }
+
+  function confirmBrowserPrint() {
+    setShowBrowserPrintGuide(false);
+    printInBrowser();
+  }
+
+  async function generateProposalFromLead(lead) {
+    let builderData;
+    try {
+      builderData = await ensureBuilderData();
+    } catch {
+      return;
+    }
+    setProposalLead(lead);
+    setProposal((current) => {
+      if (!current) return current;
+      const next = clone(current);
+      next.customer = {
+        ...(next.customer || {}),
+        name: lead.customerName || next.customer?.name || "",
+        email: lead.email || next.customer?.email || "",
+        phone: lead.phone || lead.whatsapp || next.customer?.phone || ""
+      };
+      next.trip = {
+        ...(next.trip || {}),
+        title: lead.destinationInterest
+          ? `${lead.destinationInterest} ${lead.tripType || "Travel"} Plan`
+          : next.trip?.title || "Travel Proposal",
+        startDate: lead.expectedStartDate || next.trip?.startDate || "",
+        travelers: {
+          adults: Math.max(1, Number(lead.travelerCount || 1)),
+          children: 0
+        }
+      };
+      return maybeRegeneratePricing(next, builderData.inventory);
+    });
+    setIsSubtitleAuto(true);
+    setActiveView("proposal");
+    setAdminMessage(`Builder prepared for ${lead.customerName}.`);
+  }
+
+  async function openSavedProposal(savedProposal) {
+    let builderData;
+    try {
+      builderData = await ensureBuilderData();
+    } catch {
+      return;
+    }
+    setProposal(normalizePricing(savedProposal, builderData.inventory, { regenerate: false, preserveManual: true }));
+    setProposalLead(null);
+    setActiveDay(0);
+    setActiveView("proposal");
+    setAdminMessage(`Opened saved proposal for ${savedProposal.customer?.name || savedProposal.trip?.title || "customer"}.`);
+  }
+
   async function sendAdminRequest(path, options) {
     const nextInventory = await sendJsonRequest(path, options);
     setInventory(nextInventory);
@@ -646,7 +838,9 @@ export default function Home() {
   function editDestination(destination) {
     setDestinationForm(destinationFormFromRecord(destination));
     setDestinationImageFile(null);
+    setAdminMessage(`Editing destination: ${destination.name}.`);
     setActiveView("inventory");
+    focusInventoryForm(destinationFormRef);
   }
 
   async function archiveDestination(destinationId) {
@@ -701,7 +895,9 @@ export default function Home() {
   function editHotel(hotel) {
     setHotelForm(hotelFormFromRecord(hotel, inventory.destinations[0]?.id || ""));
     setHotelImageFile(null);
+    setAdminMessage(`Editing hotel: ${hotel.name}.`);
     setActiveView("inventory");
+    focusInventoryForm(hotelFormRef);
   }
 
   async function archiveHotel(hotelId) {
@@ -743,7 +939,9 @@ export default function Home() {
 
   function editVehicle(vehicle) {
     setVehicleForm(vehicleFormFromRecord(vehicle));
+    setAdminMessage(`Editing vehicle: ${vehicle.name}.`);
     setActiveView("inventory");
+    focusInventoryForm(vehicleFormRef);
   }
 
   async function archiveVehicle(vehicleId) {
@@ -783,6 +981,16 @@ export default function Home() {
     }
   }
 
+  async function archiveBackgroundImage(imageId) {
+    setAdminMessage("");
+    try {
+      await sendAdminRequest(`/api/admin/background-images/${encodeURIComponent(imageId)}`, { method: "DELETE" });
+      setAdminMessage("Background image archived.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
   async function submitDayPlan(event) {
     event.preventDefault();
     setAdminMessage("");
@@ -809,7 +1017,9 @@ export default function Home() {
 
   function editDayPlan(dayPlan) {
     setDayPlanForm(dayPlanFormFromRecord(dayPlan, inventory.destinations[0]?.id || ""));
+    setAdminMessage(`Editing day plan: ${dayPlan.title}.`);
     setActiveView("inventory");
+    focusInventoryForm(dayPlanFormRef);
   }
 
   async function archiveDayPlan(dayPlanId) {
@@ -828,27 +1038,229 @@ export default function Home() {
     }
   }
 
-  if (!inventory || !proposal) {
-    return <div className="loading">{adminMessage || "Loading Kashmir proposal builder..."}</div>;
+  async function submitLogin(event) {
+    event.preventDefault();
+    setAuthMessage("");
+    try {
+      const { user } = await loginRequest(loginForm);
+      setCurrentUser(user);
+      if (user.isPlatformOwner && !user.tenant_slug) {
+        setActiveView("owner");
+      }
+      setLoginForm({ email: "", password: "" });
+    } catch (error) {
+      setAuthMessage(error.message);
+    }
   }
 
-  const day = proposal.days[activeDay];
-  const activeTemplate = inventory.templates.find((template) => template.id === proposal.templateId) || inventory.templates[0];
+  async function submitSetupPassword(event) {
+    event.preventDefault();
+    setAuthMessage("");
+    if (setupForm.password !== setupForm.confirmPassword) {
+      setAuthMessage("Passwords do not match.");
+      return;
+    }
+
+    try {
+      await setupPasswordRequest({ token: setupToken, password: setupForm.password });
+      setSetupForm({ password: "", confirmPassword: "" });
+      setCurrentUser(null);
+      setSetupToken("");
+      setAuthChecked(true);
+      window.location.replace("/");
+    } catch (error) {
+      setAuthMessage(error.message);
+    }
+  }
+
+  async function logout() {
+    await logoutRequest().catch(() => {});
+    setCurrentUser(null);
+    setInventory(null);
+    setProposal(null);
+    setActiveView("proposal");
+  }
+
+  async function loadTeamMembers() {
+    if (currentUser?.role !== "admin") return;
+    try {
+      const data = await fetchTeamMembers();
+      setTeamMembers(data.users || []);
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function createTeamMember(event) {
+    event.preventDefault();
+    setAdminMessage("");
+    setTeamSetupLink("");
+    try {
+      const data = await sendJsonRequest("/api/admin/users", {
+        method: "POST",
+        body: JSON.stringify(teamForm)
+      });
+      setTeamMembers(data.users || []);
+      setTeamSetupLink(data.setupUrl || "");
+      setTeamForm({ name: "", email: "", role: "editor" });
+      setAdminMessage("Team member created.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function resendTeamSetupLink(userId) {
+    setAdminMessage("");
+    setTeamSetupLink("");
+    try {
+      const data = await sendJsonRequest(`/api/admin/users/${encodeURIComponent(userId)}/setup-link`, {
+        method: "POST",
+        body: JSON.stringify({})
+      });
+      setTeamSetupLink(data.setupUrl || "");
+      setAdminMessage("Setup link generated.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function deactivateTeamMember(userId) {
+    setAdminMessage("");
+    try {
+      const data = await sendAdminRequest(`/api/admin/users/${encodeURIComponent(userId)}`, { method: "DELETE" });
+      setTeamMembers(data.users || []);
+      setAdminMessage("Team member deactivated.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function loadOwnerTenants() {
+    if (!currentUser?.isPlatformOwner) return;
+    try {
+      const data = await fetchOwnerTenants();
+      setOwnerTenants(data.tenants || []);
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function createOwnerTenant(event) {
+    event.preventDefault();
+    setAdminMessage("");
+    try {
+      const data = await sendJsonRequest("/api/owner/tenants", {
+        method: "POST",
+        body: JSON.stringify(ownerTenantForm)
+      });
+      setOwnerTenants(data.tenants || []);
+      setOwnerAdminForm((current) => ({ ...current, tenantSlug: data.tenant?.slug || current.tenantSlug }));
+      setOwnerTenantForm({ slug: "", name: "", email: "", phone: "" });
+      setAdminMessage("Tenant saved.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function createOwnerTenantAdmin(event) {
+    event.preventDefault();
+    setAdminMessage("");
+    setOwnerSetupLink("");
+    try {
+      const data = await sendJsonRequest(`/api/owner/tenants/${encodeURIComponent(ownerAdminForm.tenantSlug)}/admins`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: ownerAdminForm.name,
+          email: ownerAdminForm.email
+        })
+      });
+      setOwnerTenants(data.tenants || []);
+      setOwnerSetupLink(data.setupUrl || "");
+      setOwnerAdminForm((current) => ({ tenantSlug: current.tenantSlug, name: "", email: "" }));
+      setAdminMessage("Tenant admin setup link created.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  useEffect(() => {
+    if (activeView === "team") {
+      loadTeamMembers();
+    }
+  }, [activeView, currentUser?.role]);
+
+  useEffect(() => {
+    if (activeView === "owner") {
+      loadOwnerTenants();
+    }
+  }, [activeView, currentUser?.isPlatformOwner]);
+
+  useEffect(() => {
+    if (activeView === "inventory" && currentUser?.role && !["admin", "editor"].includes(currentUser.role)) {
+      setActiveView("proposal");
+    }
+    if (activeView === "pipeline" && currentUser?.role && currentUser.role !== "admin") {
+      setLeadInitialFilters({});
+      setActiveView("leads");
+    }
+  }, [activeView, currentUser?.role]);
+
+  if (setupToken) {
+    return (
+      <SetupPasswordScreen
+        authMessage={authMessage}
+        setupForm={setupForm}
+        setSetupForm={setSetupForm}
+        submitSetupPassword={submitSetupPassword}
+      />
+    );
+  }
+
+  if (setupToken === null || !authChecked) {
+    return <div className="loading">Checking session...</div>;
+  }
+
+  if (!currentUser) {
+    return (
+      <LoginScreen
+        authMessage={authMessage}
+        loginForm={loginForm}
+        setLoginForm={setLoginForm}
+        submitLogin={submitLogin}
+      />
+    );
+  }
+
+  const hasWorkspace = Boolean(inventory && proposal);
+  const canManageInventory = currentUser.tenant_slug && ["admin", "editor"].includes(currentUser.role);
+  const canViewPipeline = currentUser.tenant_slug && currentUser.role === "admin";
+  const needsWorkspace = ["proposal", "inventory"].includes(activeView);
+
+  if (needsWorkspace && !hasWorkspace) {
+    return <div className="loading">{adminMessage || (isLoadingBuilderData ? "Loading builder data..." : "Loading Kashmir proposal builder...")}</div>;
+  }
+
+  const day = hasWorkspace ? proposal.days[activeDay] : {};
+  const activeTemplate = hasWorkspace
+    ? inventory.templates.find((template) => template.id === proposal.templateId) || inventory.templates[0]
+    : { name: "Owner Console", description: "Manage tenants and tenant admins." };
   const activeTemplateThemes = activeTemplate?.themes || [];
-  const selectedDestination = inventory.destinations.find((item) => item.id === day.destinationId) || inventory.destinations.find((item) => item.name === day.destination);
+  const selectedDestination = hasWorkspace
+    ? inventory.destinations.find((item) => item.id === day.destinationId) || inventory.destinations.find((item) => item.name === day.destination)
+    : null;
 
   // If a destination cannot be matched, show all hotels rather than leaving the
   // hotel select empty. This is useful while users manually edit JSON/data.
-  const availableHotels = hotelByDestination[selectedDestination?.id] || inventory.hotels;
-  const selectedHotel = inventory.hotels.find((item) => item.id === day.hotelId) || inventory.hotels.find((item) => item.name === day.hotelName);
-  const availableDayPlans = (inventory.dayPlans || []).filter((plan) => plan.destinationId === selectedDestination?.id);
+  const availableHotels = hasWorkspace ? hotelByDestination[selectedDestination?.id] || inventory.hotels : [];
+  const selectedHotel = hasWorkspace ? inventory.hotels.find((item) => item.id === day.hotelId) || inventory.hotels.find((item) => item.name === day.hotelName) : null;
+  const availableDayPlans = hasWorkspace ? (inventory.dayPlans || []).filter((plan) => plan.destinationId === selectedDestination?.id) : [];
   const destinationImages = selectedDestination?.images || [];
   const hotelImages = selectedHotel?.images || [];
   const selectedRoomType = day.roomType || selectedHotel?.roomType || "";
   const selectedRooms = Math.max(1, Number(day.rooms || 1));
-  const effectiveMealPlan = day.mealPlan || proposal.pricing.defaultMealPlan || "MAP";
-  const visibleDayStart = Math.max(0, Math.min(activeDay - 1, proposal.days.length - 3));
-  const visibleDayTabs = proposal.days
+  const effectiveMealPlan = day.mealPlan || proposal?.pricing?.defaultMealPlan || "MAP";
+  const visibleDayStart = Math.max(0, Math.min(activeDay - 1, (proposal?.days?.length || 0) - 3));
+  const visibleDayTabs = (proposal?.days || [])
     .map((item, index) => ({ item, index }))
     .slice(visibleDayStart, visibleDayStart + 3);
 
@@ -868,7 +1280,12 @@ export default function Home() {
 
   return (
     <main className="app-shell" data-theme={theme}>
-      {/* Left navigation is a product placeholder in v0.1.0. Only Proposal is active. */}
+      {showBrowserPrintGuide && (
+        <PrintGuideModal
+          confirmBrowserPrint={confirmBrowserPrint}
+          onCancel={() => setShowBrowserPrintGuide(false)}
+        />
+      )}
       <aside className="sidebar">
         <div className="logo">
           <Sparkles size={22} />
@@ -879,25 +1296,56 @@ export default function Home() {
         </div>
 
         <nav>
-          <button className={activeView === "proposal" ? "active" : ""} onClick={() => setActiveView("proposal")}>Proposal</button>
-          <button className={activeView === "inventory" ? "active" : ""} onClick={() => setActiveView("inventory")}>Inventory</button>
-          <button disabled>Templates</button>
-          <button disabled>Customers</button>
+          {currentUser.tenant_slug && (
+            <>
+              <button className={activeView === "leads" ? "active" : ""} onClick={() => {
+                setLeadInitialFilters({});
+                setActiveView("leads");
+              }}>Leads</button>
+              {canViewPipeline && (
+                <button className={activeView === "pipeline" ? "active" : ""} onClick={() => setActiveView("pipeline")}>Pipeline</button>
+              )}
+              <button className={activeView === "proposal" ? "active" : ""} onClick={() => setActiveView("proposal")}>Builder</button>
+              <button className={activeView === "proposals" ? "active" : ""} onClick={() => setActiveView("proposals")}>Proposals</button>
+              <button className={["invoices", "invoice"].includes(activeView) ? "active" : ""} onClick={() => setActiveView("invoices")}>Invoices</button>
+              {canManageInventory && (
+                <button className={activeView === "inventory" ? "active" : ""} onClick={() => setActiveView("inventory")}>Inventory</button>
+              )}
+            </>
+          )}
+          {currentUser.tenant_slug && currentUser.role === "admin" && (
+            <button className={activeView === "team" ? "active" : ""} onClick={() => setActiveView("team")}>Team</button>
+          )}
+          {currentUser.isPlatformOwner && (
+            <button className={activeView === "owner" ? "active" : ""} onClick={() => setActiveView("owner")}>Owner</button>
+          )}
         </nav>
 
-        <div className="template-card">
-          <span>Active template</span>
-          <strong>{activeTemplate.name}</strong>
-          <p>{activeTemplate.description}</p>
-        </div>
+        {hasWorkspace && (
+          <div className="template-card">
+            <span>Active template</span>
+            <strong>{activeTemplate.name}</strong>
+            <p>{activeTemplate.description}</p>
+          </div>
+        )}
       </aside>
 
       <section className="builder">
         {/* Sticky header keeps export available while editing long itineraries. */}
         <header className="topbar">
           <div>
-            <p>{activeView === "proposal" ? "Proposal Builder" : "Tenant Inventory"}</p>
-            <h1>{activeView === "proposal" ? proposal.trip.title : "Destinations, hotels, and images"}</h1>
+            <p>{currentUser.tenant_name} · {currentUser.name}</p>
+            <h1>
+              {activeView === "proposal" && proposal.trip.title}
+              {activeView === "leads" && "Leads"}
+              {activeView === "pipeline" && "Pipeline"}
+              {activeView === "proposals" && "Saved Proposals"}
+              {activeView === "invoices" && "Saved Invoices"}
+              {activeView === "invoice" && "Invoice"}
+              {activeView === "inventory" && "Destinations, hotels, and images"}
+              {activeView === "team" && "Team Access"}
+              {activeView === "owner" && "Owner Console"}
+            </h1>
           </div>
           <div className="topbar-actions">
             <button
@@ -909,18 +1357,105 @@ export default function Home() {
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             {activeView === "proposal" && (
-              <button className="primary-button" onClick={exportPdf} disabled={isExporting}>
-                {isExporting ? <RefreshCw size={18} /> : <Download size={18} />}
-                {isExporting ? "Exporting" : "Export PDF"}
-              </button>
+              <>
+                <button
+                  className="secondary-button topbar-button"
+                  type="button"
+                  onClick={saveCurrentProposal}
+                  disabled={proposalSaveStatus === "saving"}
+                >
+                  {proposalSaveStatus === "saving" ? <RefreshCw size={18} /> : <Save size={18} />}
+                  {proposalSaveStatus === "saving" && "Saving"}
+                  {proposalSaveStatus === "saved" && "Saved"}
+                  {proposalSaveStatus === "error" && "Save failed"}
+                  {proposalSaveStatus === "idle" && "Save Proposal"}
+                </button>
+                <button className="primary-button topbar-button" type="button" onClick={exportPdf} disabled={isExporting}>
+                  {isExporting ? <RefreshCw size={18} /> : <Download size={18} />}
+                  {isExporting ? "Exporting" : "Export PDF"}
+                </button>
+                <button className="secondary-button topbar-button" type="button" onClick={openBrowserPrintGuide}>
+                  <Printer size={18} />
+                  Print / Save PDF
+                </button>
+              </>
             )}
+            <button className="icon-button" onClick={logout} title="Sign out" aria-label="Sign out">
+              <LogOut size={18} />
+            </button>
           </div>
         </header>
 
-        {activeView === "inventory" ? (
+        {activeView === "owner" ? (
+          <OwnerPanel
+            adminMessage={adminMessage}
+            createOwnerTenant={createOwnerTenant}
+            createOwnerTenantAdmin={createOwnerTenantAdmin}
+            ownerAdminForm={ownerAdminForm}
+            ownerSetupLink={ownerSetupLink}
+            ownerTenantForm={ownerTenantForm}
+            ownerTenants={ownerTenants}
+            setOwnerAdminForm={setOwnerAdminForm}
+            setOwnerTenantForm={setOwnerTenantForm}
+            setupLinkOrigin={window.location.origin}
+          />
+        ) : activeView === "team" ? (
+          <TeamPanel
+            adminMessage={adminMessage}
+            createTeamMember={createTeamMember}
+            currentUser={currentUser}
+            deactivateTeamMember={deactivateTeamMember}
+            resendTeamSetupLink={resendTeamSetupLink}
+            setTeamForm={setTeamForm}
+            setupLinkOrigin={window.location.origin}
+            teamForm={teamForm}
+            teamMembers={teamMembers}
+            teamSetupLink={teamSetupLink}
+          />
+        ) : activeView === "leads" ? (
+          <LeadsDashboard initialFilters={leadInitialFilters} onGenerateProposal={generateProposalFromLead} />
+        ) : activeView === "pipeline" && canViewPipeline ? (
+          <PipelineDashboard
+            onViewLeads={(filters) => {
+              setLeadInitialFilters(filters);
+              setActiveView("leads");
+            }}
+          />
+        ) : activeView === "proposals" ? (
+          <ProposalsDashboard
+            onOpenProposal={(savedProposal) => openSavedProposal(savedProposal)}
+            onGenerateInvoice={(invoice) => {
+              setPrefilledInvoice(invoice);
+              setPrefilledInvoiceRecord(null);
+              setActiveView("invoice");
+            }}
+          />
+        ) : activeView === "invoices" ? (
+          <InvoicesDashboard
+            onNewInvoice={() => {
+              setPrefilledInvoice(null);
+              setPrefilledInvoiceRecord(null);
+              setActiveView("invoice");
+            }}
+            onOpenInvoice={(invoice, savedInvoice) => {
+              setPrefilledInvoice(invoice);
+              setPrefilledInvoiceRecord(savedInvoice);
+              setActiveView("invoice");
+            }}
+          />
+        ) : activeView === "invoice" ? (
+          <InvoicePanel
+            initialInvoice={prefilledInvoice}
+            initialSavedInvoice={prefilledInvoiceRecord}
+            onInitialInvoiceConsumed={() => {
+              setPrefilledInvoice(null);
+              setPrefilledInvoiceRecord(null);
+            }}
+          />
+        ) : activeView === "inventory" && canManageInventory ? (
           <div className="inventory-workspace">
             <section className="admin-grid">
-              <form className="panel" onSubmit={submitDestination}>
+              <form className="panel" ref={destinationFormRef} onSubmit={submitDestination}>
                 <div className="panel-title with-action">
                   <div>
                     <MapPin size={18} />
@@ -964,7 +1499,7 @@ export default function Home() {
                 </button>
               </form>
 
-              <form className="panel" onSubmit={submitHotel}>
+              <form className="panel" ref={hotelFormRef} onSubmit={submitHotel}>
                 <div className="panel-title with-action">
                   <div>
                     <Hotel size={18} />
@@ -1074,7 +1609,7 @@ export default function Home() {
                 </button>
               </form>
 
-              <form className="panel" onSubmit={submitVehicle}>
+              <form className="panel" ref={vehicleFormRef} onSubmit={submitVehicle}>
                 <div className="panel-title with-action">
                   <div>
                     <Car size={18} />
@@ -1139,7 +1674,7 @@ export default function Home() {
                 </button>
               </form>
 
-              <form className="panel" onSubmit={submitDayPlan}>
+              <form className="panel" ref={dayPlanFormRef} onSubmit={submitDayPlan}>
                 <div className="panel-title with-action">
                   <div>
                     <CalendarDays size={18} />
@@ -1196,10 +1731,10 @@ export default function Home() {
                         <span>{destination.region || "No region"} · {destination.images?.length || 0} images</span>
                       </div>
                       <div className="admin-actions">
-                        <button className="icon-button" title="Edit destination" onClick={() => editDestination(destination)}>
+                        <button className="icon-button" type="button" title="Edit destination" onClick={() => editDestination(destination)}>
                           <Pencil size={16} />
                         </button>
-                        <button className="danger-button" onClick={() => archiveDestination(destination.id)}>
+                        <button className="danger-button" type="button" onClick={() => archiveDestination(destination.id)}>
                           <Trash2 size={16} />
                           Archive
                         </button>
@@ -1224,10 +1759,10 @@ export default function Home() {
                           <span>{hotelDestination?.name || "No destination"} · {hotel.category || "No category"} · {hotel.roomType || "No room type"} · INR {currency(hotel.defaultRoomNightRate)} default · {hotel.images?.length || 0} images</span>
                         </div>
                         <div className="admin-actions">
-                          <button className="icon-button" title="Edit hotel" onClick={() => editHotel(hotel)}>
+                          <button className="icon-button" type="button" title="Edit hotel" onClick={() => editHotel(hotel)}>
                             <Pencil size={16} />
                           </button>
-                          <button className="danger-button" onClick={() => archiveHotel(hotel.id)}>
+                          <button className="danger-button" type="button" onClick={() => archiveHotel(hotel.id)}>
                             <Trash2 size={16} />
                             Archive
                           </button>
@@ -1251,10 +1786,10 @@ export default function Home() {
                         <span>{vehicle.capacity || "No capacity"} · INR {currency(vehicle.defaultDayRate)} / day · {vehicle.bestFor || "No best-for note"}</span>
                       </div>
                       <div className="admin-actions">
-                        <button className="icon-button" title="Edit vehicle" onClick={() => editVehicle(vehicle)}>
+                        <button className="icon-button" type="button" title="Edit vehicle" onClick={() => editVehicle(vehicle)}>
                           <Pencil size={16} />
                         </button>
-                        <button className="danger-button" onClick={() => archiveVehicle(vehicle.id)}>
+                        <button className="danger-button" type="button" onClick={() => archiveVehicle(vehicle.id)}>
                           <Trash2 size={16} />
                           Archive
                         </button>
@@ -1269,17 +1804,23 @@ export default function Home() {
                   <ImageIcon size={18} />
                   <h2>Backgrounds</h2>
                 </div>
-                <div className="admin-list">
-                  {(inventory.backgroundImages || []).map((image) => (
-                    <div className="admin-row" key={image.id}>
-                      <div>
-                        <strong>{image.label}</strong>
-                        <span>{image.usageType} · {image.focalPoint}</span>
-                      </div>
-                      <img className="admin-thumb" src={image.url} alt={image.label} />
-                    </div>
-                  ))}
-                </div>
+	                <div className="admin-list">
+	                  {(inventory.backgroundImages || []).map((image) => (
+	                    <div className="admin-row" key={image.id}>
+	                      <div>
+	                        <strong>{image.label}</strong>
+	                        <span>{image.usageType} · {image.focalPoint}</span>
+	                      </div>
+	                      <div className="admin-actions">
+	                        <img className="admin-thumb" src={image.url} alt={image.label} />
+	                        <button className="danger-button" type="button" onClick={() => archiveBackgroundImage(image.id)}>
+	                          <Trash2 size={16} />
+	                          Archive
+	                        </button>
+	                      </div>
+	                    </div>
+	                  ))}
+	                </div>
               </div>
 
               <div className="panel">
@@ -1297,10 +1838,10 @@ export default function Home() {
                           <span>{planDestination?.name || "No destination"} · {dayPlan.summary}</span>
                         </div>
                         <div className="admin-actions">
-                          <button className="icon-button" title="Edit day plan" onClick={() => editDayPlan(dayPlan)}>
+                          <button className="icon-button" type="button" title="Edit day plan" onClick={() => editDayPlan(dayPlan)}>
                             <Pencil size={16} />
                           </button>
-                          <button className="danger-button" onClick={() => archiveDayPlan(dayPlan.id)}>
+                          <button className="danger-button" type="button" onClick={() => archiveDayPlan(dayPlan.id)}>
                             <Trash2 size={16} />
                             Archive
                           </button>
@@ -1316,6 +1857,13 @@ export default function Home() {
         <div className="workspace">
           {/* Editor column: structured data entry. Users do not edit template HTML. */}
           <section className="editor">
+            {proposalLead && (
+              <div className="lead-context-note">
+                <span>Linked lead</span>
+                <strong>{proposalLead.customerName}</strong>
+                <button className="text-button" type="button" onClick={() => setProposalLead(null)}>Clear link</button>
+              </div>
+            )}
             <div className="panel">
               {/* Trip basics map to proposal.trip and proposal.customer. */}
               <div className="panel-title">
@@ -1696,6 +2244,18 @@ export default function Home() {
                   <IndianRupee size={18} />
                   <h2>Pricing</h2>
                 </div>
+                <label className="quote-mode-switch">
+                  <span>
+                    <strong>Detailed quote</strong>
+                    <small>{proposal.pricing.showDetailedQuote ? "Proposal shows itemized package breakdown." : "Proposal shows the simple total quote."}</small>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(proposal.pricing.showDetailedQuote)}
+                    onChange={(event) => updatePricing({ showDetailedQuote: event.target.checked })}
+                  />
+                  <i aria-hidden="true"></i>
+                </label>
                 <div className="price-inputs">
                   <label>
                     Tax %

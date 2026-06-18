@@ -118,6 +118,18 @@ function durationDayCount(duration) {
   return match ? Number(match[1]) : null;
 }
 
+function nonNegativeNumberInput(value) {
+  const clean = String(value || "").replace(/[^\d.]/g, "");
+  const [integerPart, ...decimalParts] = clean.split(".");
+  return decimalParts.length ? `${integerPart}.${decimalParts.join("")}` : integerPart;
+}
+
+function blockInvalidNumberKey(event) {
+  if (["e", "E", "+", "-"].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
 function travelerLabel(travelers = {}) {
   const adults = Math.max(1, Number(travelers.adults || 1));
   const children = Math.max(0, Number(travelers.children || 0));
@@ -1658,7 +1670,7 @@ export default function Home() {
                   </label>
                   <label>
                     Default rate
-                    <input type="number" min="0" value={hotelForm.defaultRoomNightRate} onChange={(event) => setHotelForm({ ...hotelForm, defaultRoomNightRate: Number(event.target.value) })} />
+                    <input type="number" min="0" value={hotelForm.defaultRoomNightRate} onKeyDown={blockInvalidNumberKey} onChange={(event) => setHotelForm({ ...hotelForm, defaultRoomNightRate: nonNegativeNumberInput(event.target.value) })} />
                   </label>
                   <label>
                     Image label
@@ -1681,11 +1693,12 @@ export default function Home() {
                         type="number"
                         min="0"
                         value={hotelForm.roomTypeRates?.[roomType] || ""}
+                        onKeyDown={blockInvalidNumberKey}
                         onChange={(event) => setHotelForm({
                           ...hotelForm,
                           roomTypeRates: {
                             ...(hotelForm.roomTypeRates || {}),
-                            [roomType]: Number(event.target.value || 0)
+                            [roomType]: nonNegativeNumberInput(event.target.value)
                           }
                         })}
                       />
@@ -1700,11 +1713,12 @@ export default function Home() {
                         type="number"
                         min="0"
                         value={hotelForm.mealPlanRates?.[mealPlan] || ""}
+                        onKeyDown={blockInvalidNumberKey}
                         onChange={(event) => setHotelForm({
                           ...hotelForm,
                           mealPlanRates: {
                             ...(hotelForm.mealPlanRates || {}),
-                            [mealPlan]: Number(event.target.value || 0)
+                            [mealPlan]: nonNegativeNumberInput(event.target.value)
                           }
                         })}
                       />
@@ -1744,7 +1758,7 @@ export default function Home() {
                   </label>
                   <label>
                     Day rate
-                    <input type="number" min="0" value={vehicleForm.defaultDayRate} onChange={(event) => setVehicleForm({ ...vehicleForm, defaultDayRate: Number(event.target.value) })} />
+                    <input type="number" min="0" value={vehicleForm.defaultDayRate} onKeyDown={blockInvalidNumberKey} onChange={(event) => setVehicleForm({ ...vehicleForm, defaultDayRate: nonNegativeNumberInput(event.target.value) })} />
                   </label>
                 </div>
                 <label>
@@ -2371,11 +2385,11 @@ export default function Home() {
                 <div className="price-inputs">
                   <label>
                     Tax %
-                    <input type="number" min="0" value={proposal.pricing.taxPercent ?? 5} onChange={(event) => updatePricing({ taxPercent: Number(event.target.value) })} />
+                    <input type="number" min="0" value={proposal.pricing.taxPercent ?? 5} onKeyDown={blockInvalidNumberKey} onChange={(event) => updatePricing({ taxPercent: nonNegativeNumberInput(event.target.value) })} />
                   </label>
                   <label>
                     Discount
-                    <input type="number" min="0" value={proposal.pricing.discount} onChange={(event) => updatePricing({ discount: Number(event.target.value) })} />
+                    <input type="number" min="0" value={proposal.pricing.discount} onKeyDown={blockInvalidNumberKey} onChange={(event) => updatePricing({ discount: nonNegativeNumberInput(event.target.value) })} />
                   </label>
                 </div>
                 <div className="pricing-lines">
@@ -2417,7 +2431,8 @@ export default function Home() {
                         type="number"
                         min="0"
                         value={item.unitPrice}
-                        onChange={(event) => updatePricingLine(index, { unitPrice: Number(event.target.value) })}
+                        onKeyDown={blockInvalidNumberKey}
+                        onChange={(event) => updatePricingLine(index, { unitPrice: nonNegativeNumberInput(event.target.value) })}
                       />
                       <strong>INR {currency(item.amount)}</strong>
                       <button className="icon-button" type="button" title="Remove pricing line" onClick={() => removePricingLine(index)}>

@@ -15,8 +15,12 @@ export function hotelPayload(form) {
     category: form.category,
     roomType: form.roomType,
     defaultRoomNightRate: Number(form.defaultRoomNightRate || 0),
-    roomTypeRates: form.roomTypeRates,
-    mealPlanRates: form.mealPlanRates,
+    roomTypeRates: Object.fromEntries(
+      Object.entries(form.roomTypeRates || {}).map(([roomType, rate]) => [roomType, Number(rate || 0)])
+    ),
+    mealPlanRates: Object.fromEntries(
+      Object.entries(form.mealPlanRates || {}).map(([mealPlan, rate]) => [mealPlan, Number(rate || 0)])
+    ),
     summary: form.summary
   };
 }

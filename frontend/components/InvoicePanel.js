@@ -27,6 +27,30 @@ function setNestedValue(source, path, value) {
   return next;
 }
 
+function nonNegativeNumberInput(value) {
+  const clean = String(value || "").replace(/[^\d.]/g, "");
+  const [integerPart, ...decimalParts] = clean.split(".");
+  return decimalParts.length ? `${integerPart}.${decimalParts.join("")}` : integerPart;
+}
+
+function blockInvalidNumberKey(event) {
+  if (["e", "E", "+", "-"].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
+function invoicePayload(invoice) {
+  return {
+    ...invoice,
+    lineItems: (invoice.lineItems || []).map((item) => ({
+      ...item,
+      quantity: Number(item.quantity || 0),
+      unitPrice: Number(item.unitPrice || 0),
+      taxPercent: Number(item.taxPercent || 0)
+    }))
+  };
+}
+
 export function InvoicePanel({ initialInvoice = null, initialSavedInvoice = null, onInitialInvoiceConsumed = () => {} }) {
   const [invoice, setInvoice] = useState(initialInvoice);
   const [previewHtml, setPreviewHtml] = useState("");
@@ -65,7 +89,7 @@ export function InvoicePanel({ initialInvoice = null, initialSavedInvoice = null
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
       try {
-        const html = await renderInvoiceHtml(invoice, { signal: controller.signal });
+        const html = await renderInvoiceHtml(invoicePayload(invoice), { signal: controller.signal });
         if (isCurrent) setPreviewHtml(html);
       } catch (error) {
         if (error.name === "AbortError") return;
@@ -147,7 +171,7 @@ export function InvoicePanel({ initialInvoice = null, initialSavedInvoice = null
     setMessage("");
     setIsSaving(true);
     try {
-      const data = await saveInvoiceRecord(invoice);
+      const data = await saveInvoiceRecord(invoicePayload(invoice));
       setInvoice(data.invoice);
       setSavedInvoiceId(data.savedInvoice.id);
       setMessage(`Invoice ${data.savedInvoice.invoiceNumber} saved.`);
@@ -162,7 +186,7 @@ export function InvoicePanel({ initialInvoice = null, initialSavedInvoice = null
     setMessage("");
     setIsExporting(true);
     try {
-      const blob = await fetchInvoicePdf(invoice);
+      const blob = await fetchInvoicePdf(invoicePayload(invoice));
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -283,9 +307,9 @@ export function InvoicePanel({ initialInvoice = null, initialSavedInvoice = null
               <div className="invoice-line" key={item.id || index}>
                 <input value={item.description} onChange={(event) => updateLineItem(index, { description: event.target.value })} aria-label="Service description" />
                 <input value={item.sac} onChange={(event) => updateLineItem(index, { sac: event.target.value })} aria-label="SAC" />
-                <input type="number" min="0" value={item.quantity} onChange={(event) => updateLineItem(index, { quantity: Number(event.target.value) })} aria-label="Quantity" />
-                <input type="number" min="0" value={item.unitPrice} onChange={(event) => updateLineItem(index, { unitPrice: Number(event.target.value) })} aria-label="Rate" />
-                <input type="number" min="0" value={item.taxPercent} onChange={(event) => updateLineItem(index, { taxPercent: Number(event.target.value) })} aria-label="Tax percent" />
+                <input type="number" min="0" value={item.quantity} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateLineItem(index, { quantity: nonNegativeNumberInput(event.target.value) })} aria-label="Quantity" />
+                <input type="number" min="0" value={item.unitPrice} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateLineItem(index, { unitPrice: nonNegativeNumberInput(event.target.value) })} aria-label="Rate" />
+                <input type="number" min="0" value={item.taxPercent} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateLineItem(index, { taxPercent: nonNegativeNumberInput(event.target.value) })} aria-label="Tax percent" />
                 <button className="icon-button" type="button" title="Remove line" onClick={() => removeLineItem(index)} disabled={invoice.lineItems.length === 1}>
                   <Trash2 size={16} />
                 </button>

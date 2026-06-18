@@ -16,6 +16,18 @@ const DEFAULT_FILTERS = {
   pageSize: 10
 };
 
+function nonNegativeNumberInput(value) {
+  const clean = String(value || "").replace(/[^\d.]/g, "");
+  const [integerPart, ...decimalParts] = clean.split(".");
+  return decimalParts.length ? `${integerPart}.${decimalParts.join("")}` : integerPart;
+}
+
+function blockInvalidNumberKey(event) {
+  if (["e", "E", "+", "-"].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
 export function ProposalsDashboard({ onGenerateInvoice, onOpenProposal }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [result, setResult] = useState({ proposals: [], page: 1, pageSize: 10, total: 0, totalPages: 1 });
@@ -109,11 +121,11 @@ export function ProposalsDashboard({ onGenerateInvoice, onOpenProposal }) {
           </label>
           <label>
             Min amount
-            <input type="number" min="0" value={filters.amountMin} onChange={(event) => updateFilter({ amountMin: event.target.value })} />
+            <input type="number" min="0" value={filters.amountMin} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateFilter({ amountMin: nonNegativeNumberInput(event.target.value) })} />
           </label>
           <label>
             Max amount
-            <input type="number" min="0" value={filters.amountMax} onChange={(event) => updateFilter({ amountMax: event.target.value })} />
+            <input type="number" min="0" value={filters.amountMax} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateFilter({ amountMax: nonNegativeNumberInput(event.target.value) })} />
           </label>
         </div>
         <div className="proposal-dashboard-actions">

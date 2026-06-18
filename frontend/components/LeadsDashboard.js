@@ -26,6 +26,22 @@ const EMPTY_LEAD = {
 
 const DEFAULT_FILTERS = { query: "", status: "", assigned: "", dateMode: "start", startDateFrom: "", startDateTo: "", page: 1, pageSize: 20 };
 
+function nonNegativeNumberInput(value) {
+  const clean = String(value || "").replace(/[^\d.]/g, "");
+  const [integerPart, ...decimalParts] = clean.split(".");
+  return decimalParts.length ? `${integerPart}.${decimalParts.join("")}` : integerPart;
+}
+
+function nonNegativeIntegerInput(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function blockInvalidNumberKey(event) {
+  if (["e", "E", "+", "-"].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
 function leadPayload(form) {
   return {
     ...form,
@@ -139,14 +155,14 @@ export function LeadsDashboard({ initialFilters = {}, onGenerateProposal }) {
           <div className="form-grid">
             <label>Name<input required value={leadForm.customerName} onChange={(event) => setLeadForm({ ...leadForm, customerName: event.target.value })} /></label>
             <label>Phone<input value={leadForm.phone} onChange={(event) => setLeadForm({ ...leadForm, phone: event.target.value })} /></label>
-            <label>Travelers<input type="number" min="1" value={leadForm.travelerCount} onChange={(event) => setLeadForm({ ...leadForm, travelerCount: Number(event.target.value) })} /></label>
+            <label>Travelers<input type="number" min="1" value={leadForm.travelerCount} onKeyDown={blockInvalidNumberKey} onChange={(event) => setLeadForm({ ...leadForm, travelerCount: nonNegativeIntegerInput(event.target.value) })} /></label>
             <label>Trip type<input value={leadForm.tripType} onChange={(event) => setLeadForm({ ...leadForm, tripType: event.target.value })} /></label>
             <label>Destination<input value={leadForm.destinationInterest} onChange={(event) => setLeadForm({ ...leadForm, destinationInterest: event.target.value })} /></label>
             <label>Source<input value={leadForm.source} onChange={(event) => setLeadForm({ ...leadForm, source: event.target.value })} /></label>
             <label>Start date<input type="date" value={leadForm.expectedStartDate} onChange={(event) => setLeadForm({ ...leadForm, expectedStartDate: event.target.value })} /></label>
             <label>End date<input type="date" value={leadForm.expectedEndDate} onChange={(event) => setLeadForm({ ...leadForm, expectedEndDate: event.target.value })} /></label>
-            <label>Budget min<input type="number" min="0" value={leadForm.budgetMin} onChange={(event) => setLeadForm({ ...leadForm, budgetMin: event.target.value })} /></label>
-            <label>Budget max<input type="number" min="0" value={leadForm.budgetMax} onChange={(event) => setLeadForm({ ...leadForm, budgetMax: event.target.value })} /></label>
+            <label>Budget min<input type="number" min="0" value={leadForm.budgetMin} onKeyDown={blockInvalidNumberKey} onChange={(event) => setLeadForm({ ...leadForm, budgetMin: nonNegativeNumberInput(event.target.value) })} /></label>
+            <label>Budget max<input type="number" min="0" value={leadForm.budgetMax} onKeyDown={blockInvalidNumberKey} onChange={(event) => setLeadForm({ ...leadForm, budgetMax: nonNegativeNumberInput(event.target.value) })} /></label>
           </div>
           <label>Notes<textarea value={leadForm.notes} onChange={(event) => setLeadForm({ ...leadForm, notes: event.target.value })} /></label>
           <button className="primary-button" type="submit" disabled={isCreating}>

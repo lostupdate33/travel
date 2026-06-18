@@ -46,7 +46,7 @@ def load_inventory_from_db(session: Session, tenant_slug: str) -> dict[str, Any]
     destination_images = session.execute(
         text(
             """
-            select di.destination_id, di.media_asset_id, di.image_key, di.label, di.aspect_ratio, di.focal_point, di.sort_order
+            select di.id, di.destination_id, di.media_asset_id, di.image_key, di.label, di.aspect_ratio, di.focal_point, di.sort_order
             from destination_images di
             where di.tenant_id = :tenant_id and di.is_active = true and di.media_asset_id is not null
             order by di.sort_order, di.label
@@ -72,7 +72,7 @@ def load_inventory_from_db(session: Session, tenant_slug: str) -> dict[str, Any]
     hotel_images = session.execute(
         text(
             """
-            select hi.hotel_id, hi.media_asset_id, hi.image_key, hi.label, hi.aspect_ratio, hi.focal_point, hi.sort_order
+            select hi.id, hi.hotel_id, hi.media_asset_id, hi.image_key, hi.label, hi.aspect_ratio, hi.focal_point, hi.sort_order
             from hotel_images hi
             where hi.tenant_id = :tenant_id and hi.is_active = true and hi.media_asset_id is not null
             order by hi.sort_order, hi.label
@@ -121,7 +121,7 @@ def load_inventory_from_db(session: Session, tenant_slug: str) -> dict[str, Any]
     background_images = session.execute(
         text(
             """
-            select bi.media_asset_id, bi.image_key, bi.label, bi.usage_type, bi.aspect_ratio, bi.focal_point, bi.sort_order
+            select bi.id, bi.media_asset_id, bi.image_key, bi.label, bi.usage_type, bi.aspect_ratio, bi.focal_point, bi.sort_order
             from background_images bi
             where bi.tenant_id = :tenant_id and bi.is_active = true and bi.media_asset_id is not null
             order by bi.sort_order, bi.label
@@ -147,7 +147,8 @@ def load_inventory_from_db(session: Session, tenant_slug: str) -> dict[str, Any]
     for image in destination_images:
         destination_images_by_id.setdefault(image["destination_id"], []).append(
             {
-                "id": image["image_key"],
+                "id": str(image["id"]),
+                "imageKey": image["image_key"],
                 "label": image["label"],
                 "url": _media_url(image["media_asset_id"]),
                 "aspect": image["aspect_ratio"],
@@ -159,7 +160,8 @@ def load_inventory_from_db(session: Session, tenant_slug: str) -> dict[str, Any]
     for image in hotel_images:
         hotel_images_by_id.setdefault(image["hotel_id"], []).append(
             {
-                "id": image["image_key"],
+                "id": str(image["id"]),
+                "imageKey": image["image_key"],
                 "label": image["label"],
                 "url": _media_url(image["media_asset_id"]),
                 "aspect": image["aspect_ratio"],
@@ -227,7 +229,8 @@ def load_inventory_from_db(session: Session, tenant_slug: str) -> dict[str, Any]
         "sectionOptions": section_options(),
         "backgroundImages": [
             {
-                "id": image["image_key"],
+                "id": str(image["id"]),
+                "imageKey": image["image_key"],
                 "label": image["label"],
                 "usageType": image["usage_type"],
                 "url": _media_url(image["media_asset_id"]),

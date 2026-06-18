@@ -45,7 +45,7 @@ def _selected_image(item: dict[str, Any] | None, image_id: str | None) -> dict[s
 
     images = item.get("images") or []
     for image in images:
-        if image.get("id") == image_id:
+        if image.get("id") == image_id or image.get("imageKey") == image_id:
             return image
 
     return _first_image(item)

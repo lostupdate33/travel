@@ -4,11 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.db.session import db_session
 from app.dependencies import require_platform_owner
-from app.schemas.auth import CreateTenantAdminPayload, CreateTenantPayload
+from app.schemas.auth import CreateTenantAdminPayload, CreateTenantPayload, SetTenantTemplatePayload
 from sqlalchemy import text
 
 from app.services.auth import create_tenant, create_user_setup, list_tenant_members, list_tenants
 from app.services.setup_links import setup_url
+from app.services.templates import list_tenant_templates, onboard_system_templates, set_tenant_template_enabled
 
 
 router = APIRouter(prefix="/api/owner", tags=["owner"])
@@ -71,5 +72,42 @@ def owner_create_tenant_admin(
                 "setupUrl": setup_url(result["setup_token"]),
                 "tenants": list_tenants(session),
             }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/templates/onboard")
+def owner_onboard_templates(current_user: dict[str, Any] = Depends(require_platform_owner)) -> dict[str, Any]:
+    with db_session() as session:
+        return {"templates": onboard_system_templates(session)}
+
+
+@router.get("/tenants/{tenant_slug}/templates")
+def owner_tenant_templates(
+    tenant_slug: str,
+    current_user: dict[str, Any] = Depends(require_platform_owner),
+) -> dict[str, Any]:
+    try:
+        with db_session() as session:
+            return list_tenant_templates(session, tenant_slug)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.put("/tenants/{tenant_slug}/templates/{template_key}")
+def owner_set_tenant_template(
+    tenant_slug: str,
+    template_key: str,
+    payload: SetTenantTemplatePayload,
+    current_user: dict[str, Any] = Depends(require_platform_owner),
+) -> dict[str, Any]:
+    try:
+        with db_session() as session:
+            return set_tenant_template_enabled(
+                session,
+                tenant_slug=tenant_slug,
+                template_key=template_key,
+                is_enabled=payload.is_enabled,
+            )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

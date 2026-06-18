@@ -1,6 +1,6 @@
--- Travel Ideate tenant-aware PostgreSQL schema proposal.
--- This is the target relational model for moving from local JSON fixtures to
--- a multi-tenant SaaS database. It is not applied by the current app yet.
+-- Travel Ideate tenant-aware PostgreSQL schema.
+-- This is the canonical fresh-install schema for the current app. Historical
+-- migrations are kept for upgrading existing databases.
 
 create extension if not exists pgcrypto;
 
@@ -39,7 +39,7 @@ create table users (
 
 create table tenant_memberships (
   id uuid primary key default gen_random_uuid(),
-  tenant_id uuid references tenants(id) on delete cascade,
+  tenant_id uuid not null references tenants(id) on delete cascade,
   user_id uuid not null references users(id) on delete cascade,
   role text not null check (role in ('admin', 'editor', 'viewer')),
   created_by_user_id uuid references users(id),
@@ -53,7 +53,7 @@ create table tenant_memberships (
 create table sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references users(id) on delete cascade,
-  tenant_id uuid not null references tenants(id) on delete cascade,
+  tenant_id uuid references tenants(id) on delete cascade,
   session_hash text not null unique,
   expires_at timestamptz not null,
   created_at timestamptz not null default now(),
@@ -92,6 +92,7 @@ create table destinations (
   name text not null,
   region text,
   summary text,
+  description text,
   is_active boolean not null default true,
   archived_at timestamptz,
   sort_order int not null default 0,
@@ -129,6 +130,7 @@ create table hotels (
   default_room_night_rate numeric(12,2) not null default 0,
   room_type_rates jsonb not null default '{}'::jsonb,
   meal_plan_rates jsonb not null default '{}'::jsonb,
+  star_rating int,
   summary text,
   is_active boolean not null default true,
   archived_at timestamptz,

@@ -44,3 +44,7 @@ class CreateTenantAdminPayload(BaseModel):
     @classmethod
     def validate_email(cls, value: str) -> str:
         return normalize_email(value)
+
+
+class SetTenantTemplatePayload(BaseModel):
+    is_enabled: bool

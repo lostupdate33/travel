@@ -148,6 +148,51 @@ function subtitleFromFormat(formatId, proposal, inventory) {
   return format.template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "");
 }
 
+function normalizeDayForInventory(day, inventory, hotelByDestinationMap) {
+  const destinations = inventory?.destinations || [];
+  const destination =
+    destinations.find((item) => item.id === day.destinationId) ||
+    destinations.find((item) => item.name === day.destination) ||
+    destinations[0];
+  if (!destination) return day;
+
+  const destinationImages = destination.images || [];
+  const destinationImage =
+    destinationImages.find((image) => image.id === day.destinationImageId || image.imageKey === day.destinationImageId) ||
+    destinationImages[0];
+  const hotels = hotelByDestinationMap[destination.id] || [];
+  const selectedHotel =
+    hotels.find((hotel) => hotel.id === day.hotelId) ||
+    hotels.find((hotel) => hotel.name === day.hotelName);
+  const dayPlan = (inventory.dayPlans || []).find((item) => item.id === day.dayPlanId && item.destinationId === destination.id);
+
+  return {
+    ...day,
+    destinationId: destination.id,
+    destination: destination.name,
+    destinationImageId: destinationImage?.id || "",
+    image: destinationImage?.url || day.image || "",
+    hotelId: selectedHotel?.id || "",
+    hotelName: selectedHotel?.name || "To be confirmed",
+    roomType: selectedHotel ? day.roomType || selectedHotel.roomType || "" : "",
+    hotelImageId: selectedHotel?.images?.find((image) => image.id === day.hotelImageId || image.imageKey === day.hotelImageId)?.id || selectedHotel?.images?.[0]?.id || "",
+    dayPlanId: dayPlan?.id || ""
+  };
+}
+
+function normalizeProposalForInventory(proposal, inventory) {
+  const hotelByDestinationMap = (inventory?.hotels || []).reduce((groups, hotel) => {
+    groups[hotel.destinationId] = groups[hotel.destinationId] || [];
+    groups[hotel.destinationId].push(hotel);
+    return groups;
+  }, {});
+
+  return {
+    ...proposal,
+    days: (proposal.days || []).map((day) => normalizeDayForInventory(day, inventory, hotelByDestinationMap))
+  };
+}
+
 function maybeRegeneratePricing(proposal, inventory) {
   if (proposal.pricing?.isCustomized) {
     return {
@@ -190,6 +235,7 @@ export default function Home() {
   const [ownerTenantForm, setOwnerTenantForm] = useState({ slug: "", name: "", email: "", phone: "" });
   const [ownerAdminForm, setOwnerAdminForm] = useState({ tenantSlug: "", name: "", email: "" });
   const [ownerSetupLink, setOwnerSetupLink] = useState("");
+  const [ownerTenantTemplates, setOwnerTenantTemplates] = useState({ tenant: null, templates: [] });
   const [showBrowserPrintGuide, setShowBrowserPrintGuide] = useState(false);
   const [prefilledInvoice, setPrefilledInvoice] = useState(null);
   const [prefilledInvoiceRecord, setPrefilledInvoiceRecord] = useState(null);
@@ -246,16 +292,17 @@ export default function Home() {
     setIsLoadingBuilderData(true);
     try {
       const { inventory: loadedInventory, proposal: sampleProposal } = await fetchBuilderData();
-      const normalizedProposal = normalizePricing(sampleProposal, loadedInventory, { regenerate: true, preserveManual: true });
+      const inventoryProposal = normalizeProposalForInventory(sampleProposal, loadedInventory);
+      const normalizedProposal = normalizePricing(inventoryProposal, loadedInventory, { regenerate: true, preserveManual: true });
       setInventory(loadedInventory);
       setProposal(normalizedProposal);
       setHotelForm((current) => ({
         ...current,
-        destinationId: sampleProposal.days?.[0]?.destinationId || ""
+        destinationId: normalizedProposal.days?.[0]?.destinationId || ""
       }));
       setDayPlanForm((current) => ({
         ...current,
-        destinationId: sampleProposal.days?.[0]?.destinationId || ""
+        destinationId: normalizedProposal.days?.[0]?.destinationId || ""
       }));
       return { inventory: loadedInventory, proposal: normalizedProposal };
     } catch (error) {
@@ -498,6 +545,7 @@ export default function Home() {
 
   function changeTemplate(templateId) {
     const template = inventory.templates.find((item) => item.id === templateId);
+    if (!template) return;
     setProposal((current) => {
       const next = clone(current);
       next.templateId = templateId;
@@ -1155,6 +1203,9 @@ export default function Home() {
       });
       setOwnerTenants(data.tenants || []);
       setOwnerAdminForm((current) => ({ ...current, tenantSlug: data.tenant?.slug || current.tenantSlug }));
+      if (data.tenant?.slug) {
+        await loadOwnerTenantTemplates(data.tenant.slug);
+      }
       setOwnerTenantForm({ slug: "", name: "", email: "", phone: "" });
       setAdminMessage("Tenant saved.");
     } catch (error) {
@@ -1178,6 +1229,51 @@ export default function Home() {
       setOwnerSetupLink(data.setupUrl || "");
       setOwnerAdminForm((current) => ({ tenantSlug: current.tenantSlug, name: "", email: "" }));
       setAdminMessage("Tenant admin setup link created.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function onboardOwnerTemplates() {
+    setAdminMessage("");
+    try {
+      await sendJsonRequest("/api/owner/templates/onboard", { method: "POST" });
+      if (ownerAdminForm.tenantSlug) {
+        await loadOwnerTenantTemplates(ownerAdminForm.tenantSlug);
+      }
+      setAdminMessage("Templates onboarded.");
+    } catch (error) {
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function loadOwnerTenantTemplates(tenantSlug) {
+    if (!tenantSlug) {
+      setOwnerTenantTemplates({ tenant: null, templates: [] });
+      return;
+    }
+    try {
+      const data = await sendJsonRequest(`/api/owner/tenants/${encodeURIComponent(tenantSlug)}/templates`);
+      setOwnerTenantTemplates(data);
+    } catch (error) {
+      setOwnerTenantTemplates({ tenant: null, templates: [] });
+      setAdminMessage(error.message);
+    }
+  }
+
+  async function toggleOwnerTenantTemplate(templateKey, isEnabled) {
+    if (!ownerAdminForm.tenantSlug) return;
+    setAdminMessage("");
+    try {
+      const data = await sendJsonRequest(
+        `/api/owner/tenants/${encodeURIComponent(ownerAdminForm.tenantSlug)}/templates/${encodeURIComponent(templateKey)}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ is_enabled: isEnabled })
+        }
+      );
+      setOwnerTenantTemplates(data);
+      setAdminMessage(isEnabled ? "Template enabled." : "Template disabled.");
     } catch (error) {
       setAdminMessage(error.message);
     }
@@ -1244,6 +1340,7 @@ export default function Home() {
   const activeTemplate = hasWorkspace
     ? inventory.templates.find((template) => template.id === proposal.templateId) || inventory.templates[0]
     : { name: "Owner Console", description: "Manage tenants and tenant admins." };
+  const hasTemplates = Boolean(activeTemplate);
   const activeTemplateThemes = activeTemplate?.themes || [];
   const selectedDestination = hasWorkspace
     ? inventory.destinations.find((item) => item.id === day.destinationId) || inventory.destinations.find((item) => item.name === day.destination)
@@ -1256,6 +1353,12 @@ export default function Home() {
   const availableDayPlans = hasWorkspace ? (inventory.dayPlans || []).filter((plan) => plan.destinationId === selectedDestination?.id) : [];
   const destinationImages = selectedDestination?.images || [];
   const hotelImages = selectedHotel?.images || [];
+  const selectedDestinationImageId = destinationImages.find(
+    (image) => image.id === day.destinationImageId || image.imageKey === day.destinationImageId
+  )?.id || destinationImages[0]?.id || "";
+  const selectedHotelImageId = hotelImages.find(
+    (image) => image.id === day.hotelImageId || image.imageKey === day.hotelImageId
+  )?.id || hotelImages[0]?.id || "";
   const selectedRoomType = day.roomType || selectedHotel?.roomType || "";
   const selectedRooms = Math.max(1, Number(day.rooms || 1));
   const effectiveMealPlan = day.mealPlan || proposal?.pricing?.defaultMealPlan || "MAP";
@@ -1321,7 +1424,7 @@ export default function Home() {
           )}
         </nav>
 
-        {hasWorkspace && (
+        {hasWorkspace && activeTemplate && (
           <div className="template-card">
             <span>Active template</span>
             <strong>{activeTemplate.name}</strong>
@@ -1391,14 +1494,23 @@ export default function Home() {
             adminMessage={adminMessage}
             createOwnerTenant={createOwnerTenant}
             createOwnerTenantAdmin={createOwnerTenantAdmin}
+            loadOwnerTenantTemplates={loadOwnerTenantTemplates}
+            onboardOwnerTemplates={onboardOwnerTemplates}
             ownerAdminForm={ownerAdminForm}
             ownerSetupLink={ownerSetupLink}
+            ownerTenantTemplates={ownerTenantTemplates}
             ownerTenantForm={ownerTenantForm}
             ownerTenants={ownerTenants}
             setOwnerAdminForm={setOwnerAdminForm}
             setOwnerTenantForm={setOwnerTenantForm}
             setupLinkOrigin={window.location.origin}
+            toggleOwnerTenantTemplate={toggleOwnerTenantTemplate}
           />
+        ) : activeView === "proposal" && hasWorkspace && !hasTemplates ? (
+          <div className="empty-state">
+            <h2>No proposal templates enabled</h2>
+            <p>Ask the platform owner to onboard templates and enable at least one template for this tenant.</p>
+          </div>
         ) : activeView === "team" ? (
           <TeamPanel
             adminMessage={adminMessage}
@@ -2081,7 +2193,7 @@ export default function Home() {
                 </div>
                 <label>
                   <span className="inline-label"><ImageIcon size={16} /> Destination image</span>
-                  <select value={day.destinationImageId || destinationImages[0]?.id || ""} onChange={(event) => updateDay(activeDay, "destinationImageId", event.target.value)}>
+                  <select value={selectedDestinationImageId} onChange={(event) => updateDay(activeDay, "destinationImageId", event.target.value)}>
                     {destinationImages.map((image) => (
                       <option key={image.id} value={image.id}>{image.label}</option>
                     ))}
@@ -2089,7 +2201,7 @@ export default function Home() {
                 </label>
                 <label>
                   <span className="inline-label"><ImageIcon size={16} /> Hotel image</span>
-                  <select value={day.hotelImageId || hotelImages[0]?.id || ""} onChange={(event) => updateDay(activeDay, "hotelImageId", event.target.value)} disabled={!selectedHotel}>
+                  <select value={selectedHotelImageId} onChange={(event) => updateDay(activeDay, "hotelImageId", event.target.value)} disabled={!selectedHotel}>
                     {!selectedHotel && <option>No hotel image</option>}
                     {hotelImages.map((image) => (
                       <option key={image.id} value={image.id}>{image.label}</option>

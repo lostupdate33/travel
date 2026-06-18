@@ -1,21 +1,33 @@
 "use client";
 
-import { Database, Hotel, MapPin } from "lucide-react";
+import { Database, Hotel, Layers, MapPin } from "lucide-react";
 
 export function OwnerPanel({
   adminMessage,
   createOwnerTenant,
   createOwnerTenantAdmin,
+  loadOwnerTenantTemplates,
+  onboardOwnerTemplates,
   ownerAdminForm,
   ownerSetupLink,
+  ownerTenantTemplates,
   ownerTenantForm,
   ownerTenants,
   setOwnerAdminForm,
   setOwnerTenantForm,
-  setupLinkOrigin
+  setupLinkOrigin,
+  toggleOwnerTenantTemplate
 }) {
   return (
     <div className="inventory-workspace">
+      <section className="panel">
+        <div className="panel-title">
+          <Layers size={18} />
+          <h2>Proposal Templates</h2>
+        </div>
+        <button className="secondary-button" type="button" onClick={onboardOwnerTemplates}>Onboard templates</button>
+      </section>
+
       <section className="admin-grid">
         <form className="panel" onSubmit={createOwnerTenant}>
           <div className="panel-title">
@@ -93,12 +105,54 @@ export function OwnerPanel({
               <button
                 className="secondary-button compact-button"
                 type="button"
-                onClick={() => setOwnerAdminForm((current) => ({ ...current, tenantSlug: tenant.slug }))}
+                onClick={() => {
+                  setOwnerAdminForm((current) => ({ ...current, tenantSlug: tenant.slug }));
+                  loadOwnerTenantTemplates(tenant.slug);
+                }}
               >
                 Add Admin
               </button>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-title">
+          <Layers size={18} />
+          <h2>Tenant Templates</h2>
+        </div>
+        <label>
+          Tenant
+          <select value={ownerAdminForm.tenantSlug} onChange={(event) => {
+            setOwnerAdminForm((current) => ({ ...current, tenantSlug: event.target.value }));
+            loadOwnerTenantTemplates(event.target.value);
+          }}>
+            <option value="">Choose tenant</option>
+            {ownerTenants.map((tenant) => (
+              <option key={tenant.id} value={tenant.slug}>{tenant.name}</option>
+            ))}
+          </select>
+        </label>
+        <div className="admin-list">
+          {(ownerTenantTemplates.templates || []).map((template) => (
+            <div className="admin-row" key={template.templateKey}>
+              <div>
+                <strong>{template.name}</strong>
+                <span>{template.templateKey} · {template.isEnabled ? "enabled" : "disabled"}</span>
+              </div>
+              <button
+                className="secondary-button compact-button"
+                type="button"
+                onClick={() => toggleOwnerTenantTemplate(template.templateKey, !template.isEnabled)}
+              >
+                {template.isEnabled ? "Disable" : "Enable"}
+              </button>
+            </div>
+          ))}
+          {ownerAdminForm.tenantSlug && !(ownerTenantTemplates.templates || []).length && (
+            <p className="status-line">No templates registered. Onboard templates first.</p>
+          )}
         </div>
       </section>
     </div>

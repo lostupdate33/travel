@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, text
 
 from app.db.session import DATABASE_URL, DEFAULT_TENANT_SLUG
 from app.services.hotel_options import hotel_star_rating
+from app.services.templates import discover_template_files
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -160,7 +161,7 @@ def main() -> None:
                 {"tenant_id": tenant_id, "name": activity, "sort_order": sort_order},
             )
 
-        for sort_order, template in enumerate(inventory["templates"]):
+        for sort_order, template in enumerate(discover_template_files()):
             template_id = conn.execute(
                 text(
                     """
@@ -173,7 +174,7 @@ def main() -> None:
                     """
                 ),
                 {
-                    "template_key": template["id"],
+                    "template_key": template["template_key"],
                     "name": template["name"],
                     "description": template["description"],
                 },

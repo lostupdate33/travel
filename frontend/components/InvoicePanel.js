@@ -39,6 +39,15 @@ function blockInvalidNumberKey(event) {
   }
 }
 
+function blockInvalidNumberInput(event) {
+  const value = event.currentTarget.value || "";
+  const text = event.data || "";
+  if (!text) return;
+  if (!/^\d*\.?\d*$/.test(text) || (text.includes(".") && value.includes("."))) {
+    event.preventDefault();
+  }
+}
+
 function invoicePayload(invoice) {
   return {
     ...invoice,
@@ -307,9 +316,9 @@ export function InvoicePanel({ initialInvoice = null, initialSavedInvoice = null
               <div className="invoice-line" key={item.id || index}>
                 <input value={item.description} onChange={(event) => updateLineItem(index, { description: event.target.value })} aria-label="Service description" />
                 <input value={item.sac} onChange={(event) => updateLineItem(index, { sac: event.target.value })} aria-label="SAC" />
-                <input type="number" min="0" value={item.quantity} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateLineItem(index, { quantity: nonNegativeNumberInput(event.target.value) })} aria-label="Quantity" />
-                <input type="number" min="0" value={item.unitPrice} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateLineItem(index, { unitPrice: nonNegativeNumberInput(event.target.value) })} aria-label="Rate" />
-                <input type="number" min="0" value={item.taxPercent} onKeyDown={blockInvalidNumberKey} onChange={(event) => updateLineItem(index, { taxPercent: nonNegativeNumberInput(event.target.value) })} aria-label="Tax percent" />
+                <input type="number" min="0" value={item.quantity} onKeyDown={blockInvalidNumberKey} onBeforeInput={blockInvalidNumberInput} onChange={(event) => updateLineItem(index, { quantity: nonNegativeNumberInput(event.target.value) })} aria-label="Quantity" />
+                <input type="number" min="0" value={item.unitPrice} onKeyDown={blockInvalidNumberKey} onBeforeInput={blockInvalidNumberInput} onChange={(event) => updateLineItem(index, { unitPrice: nonNegativeNumberInput(event.target.value) })} aria-label="Rate" />
+                <input type="number" min="0" value={item.taxPercent} onKeyDown={blockInvalidNumberKey} onBeforeInput={blockInvalidNumberInput} onChange={(event) => updateLineItem(index, { taxPercent: nonNegativeNumberInput(event.target.value) })} aria-label="Tax percent" />
                 <button className="icon-button" type="button" title="Remove line" onClick={() => removeLineItem(index)} disabled={invoice.lineItems.length === 1}>
                   <Trash2 size={16} />
                 </button>
